@@ -120,6 +120,19 @@ export default {
     contact() {
       this.setContactObject();
     },
+    // `isPhoneNumberValid` accepts digits only, so spaces, dashes, parentheses and the
+    // invisible characters that ride along when a number is pasted from a chat failed
+    // validation with an E.164 error the field could never satisfy. The leading '+' is
+    // kept: this form accepts either the national part or the whole E.164 number.
+    phoneNumber(value) {
+      const rawValue = value == null ? '' : String(value);
+      const trimmed = rawValue.trim();
+      const sanitized =
+        (trimmed.startsWith('+') ? '+' : '') + trimmed.replace(/\D/g, '');
+      if (sanitized !== rawValue) {
+        this.phoneNumber = sanitized;
+      }
+    },
   },
   mounted() {
     this.setContactObject();
