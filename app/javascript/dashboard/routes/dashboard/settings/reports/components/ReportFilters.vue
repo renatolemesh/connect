@@ -15,6 +15,8 @@ import { DATE_RANGE_TYPES } from 'dashboard/components/ui/DatePicker/helpers/Dat
 import {
   generateReportURLParams,
   parseReportURLParams,
+  parseFilterURLParams,
+  generateFilterURLParams,
 } from '../helpers/reportFilterHelper';
 
 const props = defineProps({
@@ -191,7 +193,11 @@ const updateURLParams = () => {
     range: selectedDateRange.value,
   });
 
-  router.replace({ query: { ...params } });
+  // Mantem na URL os filtros de time/caixa/agente/etiqueta, que outro componente controla.
+  const filterParams = generateFilterURLParams(
+    parseFilterURLParams(route.query)
+  );
+  router.replace({ query: { ...filterParams, ...params } });
 };
 
 const emitChange = () => {
@@ -340,7 +346,7 @@ onMounted(() => {
       @date-range-changed="onDateRangeChange"
     />
 
-    <div class="flex gap-2 items-center w-full">
+    <div class="flex flex-wrap gap-2 items-center w-full">
       <ActiveFilterChip
         v-if="showEntityFilter"
         :id="appliedFilters[getFilterKey()]"
@@ -356,6 +362,9 @@ onMounted(() => {
         @close-dropdown="closeActiveFilterDropdown"
         @add-filter="addFilter"
       />
+
+      <!-- Filtros extras da pagina (ex.: time/caixa/agente no relatorio de conversas) -->
+      <slot />
 
       <ActiveFilterChip
         v-if="isGroupByPossible"

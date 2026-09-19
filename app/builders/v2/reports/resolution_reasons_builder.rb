@@ -31,7 +31,9 @@ class V2::Reports::ResolutionReasonsBuilder
   private
 
   def resolutions
-    @resolutions ||= ReportingEvent.where(account_id: account.id, name: RESOLVED_EVENT).where(range_condition)
+    @resolutions ||= V2::Reports::ConversationFilter.new(account, params)
+                                                    .apply(ReportingEvent.where(account_id: account.id, name: RESOLVED_EVENT))
+                                                    .where(range_condition)
   end
 
   def range_condition

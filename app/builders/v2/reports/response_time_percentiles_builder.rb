@@ -25,8 +25,8 @@ class V2::Reports::ResponseTimePercentilesBuilder
   private
 
   def fetch_percentiles
-    ReportingEvent
-      .where(account_id: account.id, name: METRICS.values)
+    conversation_filter
+      .apply(ReportingEvent.where(account_id: account.id, name: METRICS.values))
       .where(range_condition)
       .group(:name)
       .select(:name, percentile_statements, "COUNT(#{value_column}) AS events_count")
@@ -41,6 +41,10 @@ class V2::Reports::ResponseTimePercentilesBuilder
   # Boolean cast keeps this to one of two literals, never user input.
   def value_column
     @value_column ||= ActiveModel::Type::Boolean.new.cast(params[:business_hours]) ? 'value_in_business_hours' : 'value'
+  end
+
+  def conversation_filter
+    @conversation_filter ||= V2::Reports::ConversationFilter.new(account, params)
   end
 
   def range_condition

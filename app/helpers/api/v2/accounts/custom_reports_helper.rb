@@ -52,11 +52,16 @@ module Api::V2::Accounts::CustomReportsHelper
       since: params[:since],
       until: params[:until],
       business_hours: params[:business_hours]
-    }
+    }.merge(conversation_filter_params)
   end
 
   def date_range_params
-    { since: params[:since], until: params[:until] }
+    { since: params[:since], until: params[:until] }.merge(conversation_filter_params)
+  end
+
+  # Recorte por time, caixa, agente e etiqueta -- ver V2::Reports::ConversationFilter.
+  def conversation_filter_params
+    params.permit(:team_id, :inbox_id, :assigned_agent_id, :label_list).to_h.symbolize_keys
   end
 
   def conversation_backlog_params
@@ -64,6 +69,6 @@ module Api::V2::Accounts::CustomReportsHelper
       since: params[:since],
       until: params[:until],
       timezone_offset: params[:timezone_offset]
-    }
+    }.merge(conversation_filter_params)
   end
 end

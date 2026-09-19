@@ -106,7 +106,7 @@ class Api::V2::Accounts::ReportsController < Api::V1::Accounts::BaseController
       id: params[:id],
       group_by: params[:group_by],
       business_hours: ActiveModel::Type::Boolean.new.cast(params[:business_hours])
-    }
+    }.merge(conversation_filter_params)
   end
 
   def current_summary_params
@@ -172,7 +172,7 @@ class Api::V2::Accounts::ReportsController < Api::V1::Accounts::BaseController
       until: params[:until],
       inbox_ids: params[:inbox_ids],
       label_ids: params[:label_ids]
-    }
+    }.merge(conversation_filter_params)
   end
 
   def first_response_time_distribution_params

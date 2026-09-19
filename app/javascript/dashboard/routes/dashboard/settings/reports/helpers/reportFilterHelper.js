@@ -44,6 +44,15 @@ export const parseFilterURLParams = query => {
   };
 };
 
+export const FILTER_URL_KEYS = [
+  'agent_id',
+  'inbox_id',
+  'team_id',
+  'sla_policy_id',
+  'label',
+  'rating',
+];
+
 // Generate filter URL params (only include non-null values)
 export const generateFilterURLParams = filters => {
   const params = {};

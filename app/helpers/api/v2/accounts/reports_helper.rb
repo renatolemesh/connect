@@ -47,7 +47,10 @@ module Api::V2::Accounts::ReportsHelper
   end
 
   def generate_conversations_report
-    builder = V2::Reports::Conversations::MetricBuilder.new(Current.account, build_params(type: :account))
+    builder = V2::Reports::Conversations::MetricBuilder.new(
+      Current.account,
+      build_params(type: :account).merge(conversation_filter_params)
+    )
     summary = builder.summary
 
     [generate_conversation_report_metrics(summary)]

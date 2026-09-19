@@ -35,8 +35,8 @@ class V2::Reports::ConversationBacklogBuilder
   end
 
   def opened_per_day
-    @opened_per_day ||= account.conversations
-                               .where(created_at: range)
+    @opened_per_day ||= conversation_filter.conversations
+                                           .where(created_at: range)
                                .group_by_period(:day, :created_at, range: range, default_value: 0, time_zone: timezone)
                                .count
   end
@@ -51,8 +51,8 @@ class V2::Reports::ConversationBacklogBuilder
 
   # One row per conversation, holding the moment it was first resolved.
   def first_resolutions
-    ReportingEvent.where(account_id: account.id, name: RESOLVED_EVENT)
-                  .group(:conversation_id)
+    conversation_filter.apply(ReportingEvent.where(account_id: account.id, name: RESOLVED_EVENT))
+                       .group(:conversation_id)
                   .select('conversation_id, MIN(created_at) AS created_at')
   end
 
@@ -60,12 +60,16 @@ class V2::Reports::ConversationBacklogBuilder
   # A resolution always follows its conversation's creation, so the difference is
   # exactly what was still open when the window started.
   def backlog_at_range_start
-    opened_before = account.conversations.where(conversations: { created_at: ...range.begin }).count
-    resolved_before = ReportingEvent.where(account_id: account.id, name: RESOLVED_EVENT)
-                                    .where(created_at: ...range.begin)
+    opened_before = conversation_filter.conversations.where(conversations: { created_at: ...range.begin }).count
+    resolved_before = conversation_filter.apply(ReportingEvent.where(account_id: account.id, name: RESOLVED_EVENT))
+                                         .where(created_at: ...range.begin)
                                     .distinct
                                     .count(:conversation_id)
     opened_before - resolved_before
+  end
+
+  def conversation_filter
+    @conversation_filter ||= V2::Reports::ConversationFilter.new(account, params)
   end
 
   def timezone

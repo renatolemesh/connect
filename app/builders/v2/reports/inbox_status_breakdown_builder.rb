@@ -14,21 +14,27 @@ class V2::Reports::InboxStatusBreakdownBuilder
   def build
     counts = conversations_by_inbox_and_status
 
-    account.inboxes.map { |inbox| build_inbox_stats(inbox, counts[inbox.id] || {}) }
-           .sort_by { |row| -row[:total] }
+    rows = account.inboxes.map { |inbox| build_inbox_stats(inbox, counts[inbox.id] || {}) }
+    # Com recorte ativo, as caixas fora dele so acrescentariam linhas zeradas.
+    rows = rows.select { |row| row[:total].positive? } if conversation_filter.active?
+    rows.sort_by { |row| -row[:total] }
   end
 
   private
 
   def conversations_by_inbox_and_status
-    account.conversations
-           .where(created_at: range)
-           .group(:inbox_id, :status)
+    conversation_filter.conversations
+                       .where(created_at: range)
+                       .group(:inbox_id, :status)
            .count
            .each_with_object({}) do |((inbox_id, status), count), grouped|
       grouped[inbox_id] ||= {}
       grouped[inbox_id][status.to_s] = count
     end
+  end
+
+  def conversation_filter
+    @conversation_filter ||= V2::Reports::ConversationFilter.new(account, params)
   end
 
   def build_inbox_stats(inbox, status_counts)

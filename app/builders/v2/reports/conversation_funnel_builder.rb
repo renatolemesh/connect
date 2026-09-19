@@ -31,7 +31,7 @@ class V2::Reports::ConversationFunnelBuilder
   private
 
   def cohort
-    @cohort ||= account.conversations.where(range_condition)
+    @cohort ||= V2::Reports::ConversationFilter.new(account, params).conversations.where(range_condition)
   end
 
   def range_condition

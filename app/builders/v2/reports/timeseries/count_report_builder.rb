@@ -26,38 +26,45 @@ class V2::Reports::Timeseries::CountReportBuilder < V2::Reports::Timeseries::Bas
   end
 
   def scope_for_conversations_count
-    scope.conversations.where(account_id: account.id, created_at: range)
+    conversation_filter.apply_to_conversations(scope.conversations.where(account_id: account.id, created_at: range))
   end
 
   def scope_for_incoming_messages_count
-    scope.messages.where(account_id: account.id, created_at: range).incoming.unscope(:order)
+    conversation_filter.apply(scope.messages.where(account_id: account.id, created_at: range).incoming.unscope(:order))
   end
 
   def scope_for_outgoing_messages_count
-    scope.messages.where(account_id: account.id, created_at: range).outgoing.unscope(:order)
+    conversation_filter.apply(scope.messages.where(account_id: account.id, created_at: range).outgoing.unscope(:order))
   end
 
   def scope_for_resolutions_count
-    scope.reporting_events.where(
-      name: :conversation_resolved,
-      account_id: account.id,
-      created_at: range
+    conversation_filter.apply(
+      scope.reporting_events.where(
+        name: :conversation_resolved,
+        account_id: account.id,
+        created_at: range
+      )
     )
   end
 
   def scope_for_bot_resolutions_count
-    scope.reporting_events.where(
-      name: :conversation_bot_resolved,
-      account_id: account.id,
-      created_at: range
+    conversation_filter.apply(
+      scope.reporting_events.where(
+        name: :conversation_bot_resolved,
+        account_id: account.id,
+        created_at: range
+      )
     )
   end
 
   def scope_for_bot_handoffs_count
-    scope.reporting_events.joins(:conversation).select(:conversation_id).where(
-      name: :conversation_bot_handoff,
-      account_id: account.id,
-      created_at: range
+    conversation_filter.apply(
+      scope.reporting_events.joins(:conversation).select(:conversation_id).where(
+        name: :conversation_bot_handoff,
+        account_id: account.id,
+        created_at: range
+      ),
+      'reporting_events.conversation_id'
     ).distinct
   end
 

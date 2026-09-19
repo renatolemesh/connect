@@ -3,6 +3,20 @@ import ApiClient from './ApiClient';
 
 const getTimeOffset = () => -new Date().getTimezoneOffset() / 60;
 
+// Recorte do relatorio de conversas por time, caixa, agente e etiqueta.
+// Chaves ausentes ou nulas nao viram parametro.
+const conversationFilterParams = ({
+  teamId,
+  inboxId,
+  assignedAgentId,
+  labelList,
+} = {}) => ({
+  team_id: teamId || undefined,
+  inbox_id: inboxId || undefined,
+  assigned_agent_id: assignedAgentId || undefined,
+  label_list: labelList || undefined,
+});
+
 class ReportsAPI extends ApiClient {
   constructor() {
     super('reports', { accountScoped: true, apiVersion: 'v2' });
@@ -16,6 +30,7 @@ class ReportsAPI extends ApiClient {
     id,
     groupBy,
     businessHours,
+    conversationFilters,
   }) {
     return axios.get(`${this.url}`, {
       params: {
@@ -27,12 +42,21 @@ class ReportsAPI extends ApiClient {
         group_by: groupBy,
         business_hours: businessHours,
         timezone_offset: getTimeOffset(),
+        ...conversationFilterParams(conversationFilters),
       },
     });
   }
 
-  // eslint-disable-next-line default-param-last
-  getSummary(since, until, type = 'account', id, groupBy, businessHours) {
+  getSummary(
+    since,
+    until,
+    // eslint-disable-next-line default-param-last
+    type = 'account',
+    id,
+    groupBy,
+    businessHours,
+    conversationFilters = {}
+  ) {
     return axios.get(`${this.url}/summary`, {
       params: {
         since,
@@ -42,6 +66,7 @@ class ReportsAPI extends ApiClient {
         group_by: groupBy,
         business_hours: businessHours,
         timezone_offset: getTimeOffset(),
+        ...conversationFilterParams(conversationFilters),
       },
     });
   }
@@ -61,9 +86,19 @@ class ReportsAPI extends ApiClient {
     });
   }
 
-  getConversationsSummaryReports({ from: since, to: until, businessHours }) {
+  getConversationsSummaryReports({
+    from: since,
+    to: until,
+    businessHours,
+    conversationFilters,
+  }) {
     return axios.get(`${this.url}/conversations_summary`, {
-      params: { since, until, business_hours: businessHours },
+      params: {
+        since,
+        until,
+        business_hours: businessHours,
+        ...conversationFilterParams(conversationFilters),
+      },
     });
   }
 
@@ -97,47 +132,70 @@ class ReportsAPI extends ApiClient {
     });
   }
 
-  getResponseTimePercentiles({ from, to, businessHours } = {}) {
+  getResponseTimePercentiles({
+    from,
+    to,
+    businessHours,
+    conversationFilters,
+  } = {}) {
     return axios.get(`${this.url}/response_time_percentiles`, {
       params: {
         since: from,
         until: to,
         business_hours: businessHours,
+        ...conversationFilterParams(conversationFilters),
       },
     });
   }
 
-  getConversationBacklog({ from, to } = {}) {
+  getConversationBacklog({ from, to, conversationFilters } = {}) {
     return axios.get(`${this.url}/conversation_backlog`, {
       params: {
         since: from,
         until: to,
         timezone_offset: getTimeOffset(),
+        ...conversationFilterParams(conversationFilters),
       },
     });
   }
 
-  getConversationFunnel({ from, to } = {}) {
+  getConversationFunnel({ from, to, conversationFilters } = {}) {
     return axios.get(`${this.url}/conversation_funnel`, {
-      params: { since: from, until: to },
+      params: {
+        since: from,
+        until: to,
+        ...conversationFilterParams(conversationFilters),
+      },
     });
   }
 
-  getResolutionReasons({ from, to } = {}) {
+  getResolutionReasons({ from, to, conversationFilters } = {}) {
     return axios.get(`${this.url}/resolution_reasons`, {
-      params: { since: from, until: to },
+      params: {
+        since: from,
+        until: to,
+        ...conversationFilterParams(conversationFilters),
+      },
     });
   }
 
-  getInboxStatusBreakdown({ from, to } = {}) {
+  getInboxStatusBreakdown({ from, to, conversationFilters } = {}) {
     return axios.get(`${this.url}/inbox_status_breakdown`, {
-      params: { since: from, until: to },
+      params: {
+        since: from,
+        until: to,
+        ...conversationFilterParams(conversationFilters),
+      },
     });
   }
 
-  getInboxLabelMatrix({ from, to } = {}) {
+  getInboxLabelMatrix({ from, to, conversationFilters } = {}) {
     return axios.get(`${this.url}/inbox_label_matrix`, {
-      params: { since: from, until: to },
+      params: {
+        since: from,
+        until: to,
+        ...conversationFilterParams(conversationFilters),
+      },
     });
   }
 

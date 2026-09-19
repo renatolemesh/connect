@@ -43,4 +43,8 @@ class V2::Reports::Timeseries::BaseTimeseriesBuilder
   def timezone
     @timezone ||= timezone_name_from_offset(params[:timezone_offset])
   end
+
+  def conversation_filter
+    @conversation_filter ||= V2::Reports::ConversationFilter.new(account, params)
+  end
 end

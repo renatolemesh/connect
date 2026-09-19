@@ -39,6 +39,13 @@ const props = defineProps({
     type: Boolean,
     default: true,
   },
+  // 'right' abre o menu para a esquerda (o filtro fica na ponta direita da tela);
+  // 'left' abre para a direita, para chips encostados na margem esquerda.
+  dropdownAlign: {
+    type: String,
+    default: 'right',
+    validator: value => ['left', 'right'].includes(value),
+  },
 });
 
 const emit = defineEmits([
@@ -69,7 +76,10 @@ const closeDropdown = () => emit('closeDropdown');
         :active-filter-id="id"
         :input-placeholder="placeholder"
         :enable-search="enableSearch"
-        class="flex flex-col w-[240px] overflow-y-auto left-0 md:left-auto md:right-0 top-10"
+        class="flex flex-col w-[240px] overflow-y-auto top-10"
+        :class="
+          dropdownAlign === 'left' ? 'left-0' : 'left-0 md:left-auto md:right-0'
+        "
         @select="addFilter"
         @remove-filter="removeFilter"
       />

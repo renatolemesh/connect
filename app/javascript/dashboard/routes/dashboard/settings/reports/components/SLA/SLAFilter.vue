@@ -10,11 +10,24 @@ import {
 } from './helpers/SLAFilterHelpers';
 import {
   parseFilterURLParams,
-  generateCompleteURLParams,
+  generateFilterURLParams,
+  FILTER_URL_KEYS,
 } from '../../helpers/reportFilterHelper';
 import FilterButton from 'dashboard/components/ui/Dropdown/DropdownButton.vue';
 import ActiveFilterChip from '../Filters/v3/ActiveFilterChip.vue';
 import AddFilterChip from '../Filters/v3/AddFilterChip.vue';
+
+// Tambem serve ao relatorio de conversas, que nao tem recorte por SLA.
+const props = defineProps({
+  filterTypes: {
+    type: Array,
+    default: () => ['sla', 'inboxes', 'agents', 'teams', 'labels'],
+  },
+  dropdownAlign: {
+    type: String,
+    default: 'right',
+  },
+});
 
 const emit = defineEmits(['filterChange']);
 
@@ -65,6 +78,7 @@ const filterListMenuItems = computed(() => {
   };
 
   return filterTypes
+    .filter(({ type }) => props.filterTypes.includes(type))
     .filter(({ type }) => !activeFilterTypes.includes(type))
     .map(({ id, name, type }) => ({
       id,
@@ -87,13 +101,15 @@ const activeFilters = computed(() => {
     sla: sla.value,
   };
 
-  return activeKeys.map(key => {
+  return activeKeys.flatMap(key => {
     const filterType = getFilterType(key, 'keyToType');
     const item = getActiveFilter(
       sources[filterType],
       filterType,
       appliedFilters.value[key]
     );
+    // Filtro vindo da URL antes de a lista (times, caixas...) chegar do servidor.
+    if (!item) return [];
     return {
       id: item.id,
       name: filterType === 'labels' ? item.title : item.name,
@@ -110,18 +126,22 @@ const hasActiveFilters = computed(() =>
 const isAllFilterSelected = computed(() => !filterListMenuItems.value.length);
 
 const updateURLParams = () => {
-  const params = generateCompleteURLParams({
-    from: route.query.from,
-    to: route.query.to,
-    range: route.query.range,
-    filters: {
+  // Preserva o que nao e filtro (datas, agrupamento, horario comercial).
+  const otherParams = Object.fromEntries(
+    Object.entries(route.query).filter(
+      ([key]) => !FILTER_URL_KEYS.includes(key)
+    )
+  );
+  const params = {
+    ...otherParams,
+    ...generateFilterURLParams({
       agent_id: appliedFilters.value.assigned_agent_id,
       inbox_id: appliedFilters.value.inbox_id,
       team_id: appliedFilters.value.team_id,
       sla_policy_id: appliedFilters.value.sla_policy_id,
       label: appliedFilters.value.label_list,
-    },
-  });
+    }),
+  };
   router.replace({ query: params });
 };
 
@@ -200,10 +220,10 @@ onMounted(() => {
 
 <template>
   <div
-    class="flex flex-col flex-wrap items-start gap-2 md:items-center md:flex-nowrap md:flex-row"
+    class="flex flex-col flex-wrap items-start gap-2 md:items-center md:flex-row"
   >
     <!-- Active filters section -->
-    <div v-if="hasActiveFilters" class="flex flex-wrap gap-2 md:flex-nowrap">
+    <div v-if="hasActiveFilters" class="flex flex-wrap gap-2">
       <ActiveFilterChip
         v-for="filter in activeFilters"
         v-bind="filter"
@@ -215,6 +235,7 @@ onMounted(() => {
         "
         :active-filter-type="activeFilterType"
         :show-menu="showSubDropdownMenu"
+        :dropdown-align="dropdownAlign"
         enable-search
         @toggle-dropdown="openActiveFilterDropdown"
         @close-dropdown="closeActiveFilterDropdown"

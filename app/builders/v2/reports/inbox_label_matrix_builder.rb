@@ -34,7 +34,7 @@ class V2::Reports::InboxLabelMatrixBuilder
     end
   end
 
-  def conversation_filter
+  def conversation_conditions
     filter = { account_id: account.id }
     filter[:created_at] = range if range.present?
     filter[:inbox_id] = params[:inbox_ids] if params[:inbox_ids].present?
@@ -45,13 +45,16 @@ class V2::Reports::InboxLabelMatrixBuilder
     label_names = filtered_labels.map(&:title)
     return {} if label_names.empty?
 
-    ActsAsTaggableOn::Tagging
-      .joins('INNER JOIN conversations ON taggings.taggable_id = conversations.id')
-      .joins('INNER JOIN tags ON taggings.tag_id = tags.id')
-      .where(taggable_type: 'Conversation', context: 'labels', conversations: conversation_filter)
-      .where(tags: { name: label_names })
-      .group('conversations.inbox_id', 'tags.name')
-      .count
+    taggings = ActsAsTaggableOn::Tagging
+               .joins('INNER JOIN conversations ON taggings.taggable_id = conversations.id')
+               .joins('INNER JOIN tags ON taggings.tag_id = tags.id')
+               .where(taggable_type: 'Conversation', context: 'labels', conversations: conversation_conditions)
+
+    V2::Reports::ConversationFilter.new(account, params)
+                                   .apply_to_conversations(taggings)
+                                   .where(tags: { name: label_names })
+                                   .group('conversations.inbox_id', 'tags.name')
+                                   .count
   end
 
   def build_matrix
