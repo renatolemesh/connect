@@ -28,14 +28,7 @@ class Api::V1::Accounts::Conversations::MessagesController < Api::V1::Accounts::
   def retry
     return if message.blank?
 
-    # For Channel::Api inboxes with a webhook URL, delivery is synchronous and the
-    # message lives in :sending until the webhook responds. Picking that status
-    # up-front avoids a brief "sent" flicker in the UI before the retry lands.
-    target_status = sync_api_delivery_message? ? 'sending' : 'sent'
-    service = Messages::StatusUpdateService.new(message, target_status)
-    service.perform
-    message.update!(content_attributes: {})
-    ::SendReplyJob.perform_later(message.id)
+    ::SendReplyJob.perform_later(message.id) if claim_message_retry
   rescue StandardError => e
     render_could_not_create_error(e.message)
   end
@@ -66,6 +59,26 @@ class Api::V1::Accounts::Conversations::MessagesController < Api::V1::Accounts::
 
   def message_finder
     @message_finder ||= MessageFinder.new(@conversation, params)
+  end
+
+  def claim_message_retry
+    message.with_lock do
+      next false unless message.failed?
+
+      # For Channel::Api inboxes with a webhook URL, delivery is synchronous and the
+      # message lives in :sending until the webhook responds. Picking that status
+      # up-front avoids a brief "sent" flicker in the UI before the retry lands.
+      target_status = sync_api_delivery_message? ? 'sending' : 'sent'
+      Messages::StatusUpdateService.new(message, target_status).perform
+      previous_source_id = message.source_id
+      retry_attributes = { content_attributes: {} }
+      retry_attributes[:source_id] = nil unless @conversation.inbox.api? || @conversation.inbox.web_widget?
+      message.update!(retry_attributes)
+      if retry_attributes.key?(:source_id) && previous_source_id.present?
+        Rails.logger.info "Cleared older source ID #{previous_source_id} for message #{message.id}"
+      end
+      true
+    end
   end
 
   def permitted_params

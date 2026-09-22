@@ -275,6 +275,59 @@ RSpec.describe 'Conversation Messages API', type: :request do
         expect(message.reload.status).to eq('sent')
         expect(message.reload.content_attributes['external_error']).to be_nil
       end
+
+      it 'enqueues the delivery job' do
+        expect do
+          post "/api/v1/accounts/#{account.id}/conversations/#{message.conversation.display_id}/messages/#{message.id}/retry",
+               headers: agent.create_new_auth_token,
+               as: :json
+        end.to have_enqueued_job(SendReplyJob).with(message.id)
+      end
+    end
+
+    # A message the provider accepted (and therefore stamped with a source_id) before
+    # reporting the delivery failure over a status webhook. Base::SendOnChannelService
+    # refuses to send anything that already carries a source_id, so leaving it in place
+    # turned the retry into a no-op that still cleared the error from the UI.
+    context 'when the provider failed the message after accepting it' do
+      let(:whatsapp_channel) { create(:channel_whatsapp, account: account, sync_templates: false, validate_provider_config: false) }
+      let(:whatsapp_inbox) { create(:inbox, channel: whatsapp_channel, account: account) }
+      let(:conversation) { create(:conversation, inbox: whatsapp_inbox, account: account) }
+      let(:message) do
+        create(:message, account: account, conversation: conversation, message_type: :outgoing,
+                         status: :failed, source_id: 'wamid.the-rejected-one',
+                         content_attributes: { external_error: '131049: This message was not delivered to maintain healthy ecosystem engagement.' })
+      end
+      let(:agent) { create(:user, account: account, role: :agent) }
+
+      before { create(:inbox_member, inbox: whatsapp_inbox, user: agent) }
+
+      it 'drops the dead source_id so the message is actually sent again' do
+        expect do
+          post "/api/v1/accounts/#{account.id}/conversations/#{conversation.display_id}/messages/#{message.id}/retry",
+               headers: agent.create_new_auth_token,
+               as: :json
+        end.to have_enqueued_job(SendReplyJob).with(message.id)
+
+        expect(response).to have_http_status(:success)
+        expect(message.reload.source_id).to be_nil
+        expect(message.reload.status).to eq('sent')
+      end
+    end
+
+    context 'when the message did not fail' do
+      let(:message) { create(:message, account: account, status: :sent) }
+      let(:agent) { create(:user, account: account, role: :agent) }
+
+      before { create(:inbox_member, inbox: message.conversation.inbox, user: agent) }
+
+      it 'does not resend it' do
+        expect do
+          post "/api/v1/accounts/#{account.id}/conversations/#{message.conversation.display_id}/messages/#{message.id}/retry",
+               headers: agent.create_new_auth_token,
+               as: :json
+        end.not_to have_enqueued_job(SendReplyJob)
+      end
     end
 
     context 'when the message id is invalid' do
