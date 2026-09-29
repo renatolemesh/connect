@@ -185,7 +185,14 @@ class Conversation < ApplicationRecord
   end
 
   def unread_incoming_messages
-    unread_messages.where(account_id: account_id).incoming.last(10)
+    # Memoizado porque numa LISTA de conversas isto era chamado 3x por conversa
+    # -- uma vez pelo `unread_count` do parcial e mais uma para cada mensagem
+    # serializada, via `Message#conversation_push_event_data`. Medido no
+    # profiling: 85 queries na tabela `messages` numa unica requisicao, 310 ms.
+    # Os tres chamadores so querem o `.count` para montar payload, e nenhum
+    # deles altera mensagens antes de reler, entao o valor nao fica obsoleto
+    # dentro de uma requisicao.
+    @unread_incoming_messages ||= unread_messages.where(account_id: account_id).incoming.last(10)
   end
 
   def cached_label_list_array

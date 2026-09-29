@@ -27,13 +27,15 @@ json.meta do
 end
 
 json.id conversation.display_id
-if conversation.messages.where(account_id: conversation.account_id).last.blank?
+# A MESMA consulta rodava duas vezes por conversa: uma so para o `.blank?` e
+# outra para pegar o registro. Numa lista de conversas isso dobrava as idas ao
+# banco a toa. Busca uma vez e reusa.
+ultima_mensagem = conversation.messages.where(account_id: conversation.account_id)
+                              .includes([{ attachments: [{ file_attachment: [:blob] }] }]).last
+if ultima_mensagem.blank?
   json.messages []
 else
-  json.messages [
-    conversation.messages.where(account_id: conversation.account_id)
-                .includes([{ attachments: [{ file_attachment: [:blob] }] }]).last.try(:push_event_data)
-  ]
+  json.messages [ultima_mensagem.push_event_data]
 end
 
 json.account_id conversation.account_id
