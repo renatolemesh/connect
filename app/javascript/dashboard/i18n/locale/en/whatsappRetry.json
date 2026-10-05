@@ -1,0 +1,72 @@
+{
+  "WHATSAPP_RETRY": {
+    "LOADING": "Loading retry settings...",
+    "HEADER": {
+      "TITLE": "Automatic message retry",
+      "DESCRIPTION": "Re-sends outgoing messages that failed, respecting the nature of each provider error. Permanent refusals are never retried."
+    },
+    "ENABLED": {
+      "LABEL": "Enable automatic retry",
+      "HELP": "When off, nothing is re-sent. The routine runs every 5 minutes."
+    },
+    "MAX_ATTEMPTS": {
+      "LABEL": "Maximum attempts",
+      "HELP": "Per message, across all runs."
+    },
+    "MAX_PER_RUN": {
+      "LABEL": "Maximum per run",
+      "HELP": "Caps how many messages a single run may re-send."
+    },
+    "INBOXES": {
+      "LABEL": "Inboxes",
+      "HELP": "With none selected, the routine acts only on official WhatsApp inboxes.",
+      "OFFICIAL": "(official)",
+      "UNOFFICIAL": "(API)"
+    },
+    "TRANSIENT": {
+      "TITLE": "Transient errors",
+      "HELP": "The call never reached the provider — a timeout, a 500, a generic error. Retrying within minutes has a real chance."
+    },
+    "SLOW": {
+      "TITLE": "Slow errors",
+      "HELP": "The provider accepted and then refused delivery per recipient (131049). The window reopens over hours, so the interval is measured in hours."
+    },
+    "CODES": {
+      "LABEL": "Error codes",
+      "HELP": "Comma separated. Digits match the code anywhere in the message; text matches as a substring."
+    },
+    "DELAYS": {
+      "LABEL": "Intervals (minutes)",
+      "HELP": "One per attempt, comma separated. The last value repeats."
+    },
+    "MAX_AGE": {
+      "LABEL": "Message age limit (hours)",
+      "HELP": "Older messages are never retried."
+    },
+    "NEVER": {
+      "LABEL": "Never retry",
+      "HELP": "Permanent refusals. These codes are skipped even if listed above."
+    },
+    "SAVE": "Save",
+    "PREVIEW": "Simulate",
+    "PREVIEW_RESULT": {
+      "TITLE": "Simulation",
+      "SUMMARY": "{examined} messages examined, {retried} would be re-sent now."
+    },
+    "REASONS": {
+      "sem_erro": "no error recorded",
+      "codigo_permanente": "permanent refusal",
+      "codigo_fora_das_regras": "code outside the rules",
+      "tentativas_esgotadas": "attempts exhausted",
+      "fora_da_janela": "outside the age window",
+      "aguardando_intervalo": "waiting for the interval"
+    },
+    "LAST_RUN": "Last run {at} — {retried} re-sent of {examined} examined.",
+    "API": {
+      "LOAD_ERROR": "Could not load the settings.",
+      "SAVE_SUCCESS": "Settings saved.",
+      "SAVE_ERROR": "Could not save the settings.",
+      "PREVIEW_ERROR": "Could not run the simulation."
+    }
+  }
+}

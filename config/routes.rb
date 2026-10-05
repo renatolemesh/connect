@@ -111,6 +111,9 @@ Rails.application.routes.draw do
           end
           resources :assignable_agents, only: [:index]
           resource :audit_logs, only: [:show]
+          resource :whatsapp_retry_setting, only: [:show, :update] do
+            post :preview
+          end
           resources :callbacks, only: [] do
             collection do
               post :register_facebook_page

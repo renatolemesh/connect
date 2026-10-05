@@ -13,6 +13,13 @@ trigger_scheduled_items_job:
   class: 'TriggerScheduledItemsJob'
   queue: scheduled_jobs
 
+# Reenvio automático de mensagens que falharam no envio.
+# Só age em contas com WhatsappRetrySetting.enabled; desligado por padrão.
+whatsapp_auto_retry_failed_messages_job:
+  cron: '*/5 * * * *'
+  class: 'Whatsapp::AutoRetryFailedMessagesJob'
+  queue: scheduled_jobs
+
 # executed At every minute..
 trigger_imap_email_inboxes_job:
   cron: '*/1 * * * *'

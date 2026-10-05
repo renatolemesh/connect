@@ -1,0 +1,72 @@
+{
+  "WHATSAPP_RETRY": {
+    "LOADING": "Carregando as configurações de reenvio...",
+    "HEADER": {
+      "TITLE": "Reenvio automático de mensagens",
+      "DESCRIPTION": "Reenvia mensagens que falharam no envio, respeitando a natureza de cada erro do provedor. Recusa definitiva nunca é reenviada."
+    },
+    "ENABLED": {
+      "LABEL": "Ativar reenvio automático",
+      "HELP": "Desligado, nada é reenviado. A rotina roda a cada 5 minutos."
+    },
+    "MAX_ATTEMPTS": {
+      "LABEL": "Máximo de tentativas",
+      "HELP": "Por mensagem, somando todas as execuções."
+    },
+    "MAX_PER_RUN": {
+      "LABEL": "Máximo por execução",
+      "HELP": "Limita quantas mensagens uma execução pode reenviar."
+    },
+    "INBOXES": {
+      "LABEL": "Caixas de entrada",
+      "HELP": "Sem nenhuma marcada, a rotina age só nas caixas de WhatsApp oficial.",
+      "OFFICIAL": "(oficial)",
+      "UNOFFICIAL": "(API)"
+    },
+    "TRANSIENT": {
+      "TITLE": "Erros transitórios",
+      "HELP": "A chamada nem chegou ao provedor — timeout, 500, erro genérico. Reenviar em minutos tem chance real de passar."
+    },
+    "SLOW": {
+      "TITLE": "Erros lentos",
+      "HELP": "O provedor aceitou e depois recusou a entrega por limite por destinatário (131049). A janela reabre ao longo de horas, então o intervalo é medido em horas."
+    },
+    "CODES": {
+      "LABEL": "Códigos de erro",
+      "HELP": "Separados por vírgula. Só dígitos casa com o número em qualquer posição; texto casa como trecho."
+    },
+    "DELAYS": {
+      "LABEL": "Intervalos (minutos)",
+      "HELP": "Um por tentativa, separados por vírgula. O último valor se repete."
+    },
+    "MAX_AGE": {
+      "LABEL": "Idade máxima da mensagem (horas)",
+      "HELP": "Mensagem mais antiga que isso nunca é reenviada."
+    },
+    "NEVER": {
+      "LABEL": "Nunca reenviar",
+      "HELP": "Recusas definitivas. Esses códigos são ignorados mesmo se aparecerem acima."
+    },
+    "SAVE": "Salvar",
+    "PREVIEW": "Simular",
+    "PREVIEW_RESULT": {
+      "TITLE": "Simulação",
+      "SUMMARY": "{examined} mensagens examinadas, {retried} seriam reenviadas agora."
+    },
+    "REASONS": {
+      "sem_erro": "sem erro registrado",
+      "codigo_permanente": "recusa definitiva",
+      "codigo_fora_das_regras": "código fora das regras",
+      "tentativas_esgotadas": "tentativas esgotadas",
+      "fora_da_janela": "fora da janela de idade",
+      "aguardando_intervalo": "aguardando o intervalo"
+    },
+    "LAST_RUN": "Última execução {at} — {retried} reenviadas de {examined} examinadas.",
+    "API": {
+      "LOAD_ERROR": "Não foi possível carregar as configurações.",
+      "SAVE_SUCCESS": "Configurações salvas.",
+      "SAVE_ERROR": "Não foi possível salvar as configurações.",
+      "PREVIEW_ERROR": "Não foi possível rodar a simulação."
+    }
+  }
+}

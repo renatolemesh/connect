@@ -689,6 +689,12 @@ const menuItems = computed(() => {
           to: accountScopedRoute('auditlogs_list'),
         },
         {
+          name: 'Settings Whatsapp Retry',
+          label: t('SIDEBAR.WHATSAPP_RETRY'),
+          icon: 'i-lucide-refresh-cw',
+          to: accountScopedRoute('whatsapp_retry_settings'),
+        },
+        {
           name: 'Settings Custom Roles',
           label: t('SIDEBAR.CUSTOM_ROLES'),
           icon: 'i-lucide-shield-plus',
