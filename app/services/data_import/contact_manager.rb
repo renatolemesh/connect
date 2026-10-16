@@ -44,8 +44,28 @@ class DataImport::ContactManager
     @account.contacts.find_by(phone_number: format_phone_number(params[:phone_number]))
   end
 
+  # Pais assumido para numero que chega sem DDI. Todas as instalacoes sao do Brasil;
+  # vazio desliga a inferencia e volta ao comportamento antigo (so prefixa "+").
+  DEFAULT_PHONE_COUNTRY = ENV.fetch('DEFAULT_PHONE_COUNTRY', 'BR').presence&.upcase&.to_sym
+
+  # Planilha e WhatsApp entregam o numero com espaco, parentese, hifen, caractere
+  # invisivel e, muitas vezes, sem o 55. O codigo antigo so prefixava "+", entao
+  # "(41) 99127-1309" virava +41991271309 — Suica — e passava na validacao.
+  #
+  # A ordem importa: primeiro tenta ler como numero nacional do pais padrao, so
+  # depois como internacional. Na ordem inversa, DDD que coincide com codigo de
+  # pais muda de pais: 51 987654321 (Porto Alegre) vira um celular do Peru.
+  # Numero com "+" explicito e sempre lido como internacional.
   def format_phone_number(phone_number)
-    phone_number.start_with?('+') ? phone_number : "+#{phone_number}"
+    raw = phone_number.to_s.strip
+    digits = raw.gsub(/\D/, '')
+    return raw if digits.blank?
+
+    if raw.start_with?('+')
+      valid_e164("+#{digits}") || "+#{digits}"
+    else
+      valid_e164(digits, DEFAULT_PHONE_COUNTRY) || valid_e164("+#{digits}") || "+#{digits}"
+    end
   end
 
   def update_contact_with_merged_attributes(params, contact)
@@ -57,6 +77,13 @@ class DataImport::ContactManager
   end
 
   private
+
+  def valid_e164(number, country = nil)
+    return nil if country.nil? && !number.start_with?('+')
+
+    parsed = country ? TelephoneNumber.parse(number, country) : TelephoneNumber.parse(number)
+    parsed.valid? ? parsed.e164_number : nil
+  end
 
   def update_contact_attributes(params, contact)
     contact.name = params[:name] if params[:name].present?
