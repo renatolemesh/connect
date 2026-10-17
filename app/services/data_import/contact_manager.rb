@@ -68,10 +68,13 @@ class DataImport::ContactManager
     end
   end
 
+  # Contato que ja existe so tem preenchido o que estiver vazio. Antes, qualquer valor
+  # do CSV substituia o atual: uma lista que repetia o telefone de outra empresa trocou
+  # o e-mail e a empresa do contato 6949 em 07/10, sem aviso.
   def update_contact_with_merged_attributes(params, contact)
-    contact.identifier = params[:identifier] if params[:identifier].present?
-    contact.email = params[:email] if params[:email].present?
-    contact.phone_number = format_phone_number(params[:phone_number]) if params[:phone_number].present?
+    contact.identifier = params[:identifier] if contact.identifier.blank? && params[:identifier].present?
+    contact.email = params[:email] if contact.email.blank? && params[:email].present?
+    contact.phone_number = format_phone_number(params[:phone_number]) if contact.phone_number.blank? && params[:phone_number].present?
     update_contact_attributes(params, contact)
     contact.save
   end
@@ -85,11 +88,31 @@ class DataImport::ContactManager
     parsed.valid? ? parsed.e164_number : nil
   end
 
+  # Roda tanto para contato novo quanto para o existente; no novo tudo esta vazio, entao
+  # "so preenche o vazio" equivale a preencher tudo.
   def update_contact_attributes(params, contact)
-    contact.name = params[:name] if params[:name].present?
+    contact.name = params[:name] if placeholder_name?(contact.name) && params[:name].present?
     contact.additional_attributes ||= {}
-    contact.additional_attributes[:company_name] = params[:company] if params[:company].present?
-    contact.additional_attributes[:city] = params[:city] if params[:city].present?
-    contact.assign_attributes(custom_attributes: contact.custom_attributes.merge(params.except(:identifier, :email, :name, :phone_number)))
+    fill_attribute(contact.additional_attributes, 'company_name', params[:company])
+    fill_attribute(contact.additional_attributes, 'city', params[:city])
+    extra = params.except(:identifier, :email, :name, :phone_number)
+    contact.assign_attributes(custom_attributes: extra.merge(contact.custom_attributes.compact_blank))
+  end
+
+  # Nome com "~" na frente e o que o canal de WhatsApp grava quando so conhece o nome de
+  # exibicao ou o proprio numero ("~+553195818126"). Nao e um nome que alguem escolheu,
+  # entao o do CSV pode substituir.
+  def placeholder_name?(name)
+    name.blank? || name.start_with?('~')
+  end
+
+  # additional_attributes e jsonb puro: carregado do banco tem chave string, montado em
+  # memoria pode ter chave simbolo. Le as duas e grava com string para nao duplicar.
+  def fill_attribute(attributes, key, value)
+    return if value.blank?
+    return if attributes[key].present? || attributes[key.to_sym].present?
+
+    attributes.delete(key.to_sym)
+    attributes[key] = value
   end
 end
