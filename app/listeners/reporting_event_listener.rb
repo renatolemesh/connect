@@ -3,18 +3,18 @@ class ReportingEventListener < BaseListener
 
   def conversation_resolved(event)
     conversation = extract_conversation_and_account(event)[0]
-    time_to_resolve = conversation.updated_at.to_i - conversation.created_at.to_i
+    start_time = resolution_start_time(conversation)
+    time_to_resolve = conversation.updated_at.to_i - start_time.to_i
 
     reporting_event = ReportingEvent.new(
       name: 'conversation_resolved',
       value: time_to_resolve,
-      value_in_business_hours: business_hours(conversation.inbox, conversation.created_at,
-                                              conversation.updated_at),
+      value_in_business_hours: business_hours(conversation.inbox, start_time, conversation.updated_at),
       account_id: conversation.account_id,
       inbox_id: conversation.inbox_id,
       user_id: conversation.assignee_id,
       conversation_id: conversation.id,
-      event_start_time: conversation.created_at,
+      event_start_time: start_time,
       event_end_time: conversation.updated_at
     )
 
@@ -115,6 +115,26 @@ class ReportingEventListener < BaseListener
   end
 
   private
+
+  # Caixa com "conversa unica" reabre a mesma conversa a cada novo contato do cliente. Contar
+  # a resolucao desde a criacao somaria os dias em que ela ficou encerrada, entao ali cada
+  # resolucao conta so o periodo aberto: da reabertura que seguiu a resolucao anterior ate agora.
+  # Sem resolucao anterior, ou sem o evento de reabertura, vale a criacao, como nas demais caixas.
+  def resolution_start_time(conversation)
+    return conversation.created_at unless conversation.inbox.lock_to_single_conversation?
+
+    reopened_at(conversation) || conversation.created_at
+  end
+
+  # A primeira abertura depois da resolucao anterior, nao a ultima: um adiamento reaberto no meio
+  # do periodo tambem gera conversation_opened e nao pode encurtar a conta.
+  def reopened_at(conversation)
+    events = ReportingEvent.where(conversation_id: conversation.id)
+    last_resolved_at = events.where(name: 'conversation_resolved').maximum(:event_end_time)
+    return if last_resolved_at.blank?
+
+    events.where(name: 'conversation_opened').where('event_end_time >= ?', last_resolved_at).minimum(:event_end_time)
+  end
 
   def create_conversation_opened_event(conversation, time_since_resolved, business_hours_value, start_time)
     reporting_event = ReportingEvent.new(
