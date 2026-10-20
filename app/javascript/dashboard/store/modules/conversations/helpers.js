@@ -27,11 +27,27 @@ const isExcludedIncomingLastMessage = conversation => {
   return excluded.includes(content);
 };
 
+// A ultima mensagem e do cliente? O backend (`ConversationFinder#filter_by_unread_status`)
+// exige `last_message_type = incoming`, e aqui faltava o mesmo teste: a conversa
+// entrava na lista por uma mensagem do cliente e, quando era respondida, o evento
+// ao vivo atualizava o texto mas ela NAO saia do filtro -- so sumia recarregando a
+// pagina. Aparecia com a setinha de resposta no meio das nao respondidas.
+const hasIncomingLastMessage = conversation => {
+  const messages = conversation.messages || [];
+  const lastMessage = messages[messages.length - 1];
+  // Sem mensagem carregada nao da para decidir; manter na lista e o lado seguro,
+  // porque o refresh seguinte corrige. Remover por engano esconde conversa viva.
+  if (!lastMessage) return true;
+  return lastMessage.message_type === 0;
+};
+
 export const filterByStatus = (conversation, filterStatus) => {
   if (filterStatus === 'all') return true;
   if (filterStatus === 'unread') {
     return (
-      conversation.status === 'open' && !isExcludedIncomingLastMessage(conversation)
+      conversation.status === 'open' &&
+      hasIncomingLastMessage(conversation) &&
+      !isExcludedIncomingLastMessage(conversation)
     );
   }
   return conversation.status === filterStatus;
