@@ -4,7 +4,9 @@
     <title>
       Connect
     </title>
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no, user-scalable=0"/>
+    <%# maximum-scale evita o zoom do iPhone ao tocar na caixa de resposta (fonte < 16px);
+        interactive-widget faz o teclado do Android encolher a tela em vez de cobri-la. %>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no, user-scalable=0, interactive-widget=resizes-content"/>
     <link rel="icon" type="image/png" sizes="512x512" href="<%= @global_config['LOGO_THUMBNAIL'] %>">
     <%= csrf_meta_tags %>
     <script>

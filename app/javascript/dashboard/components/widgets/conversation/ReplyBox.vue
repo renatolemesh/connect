@@ -3,6 +3,7 @@ import { defineAsyncComponent, useTemplateRef } from 'vue';
 import { mapGetters } from 'vuex';
 import { useAlert } from 'dashboard/composables';
 import { useUISettings } from 'dashboard/composables/useUISettings';
+import { useTouchDevice } from 'dashboard/composables/useTouchDevice';
 import { useTrack } from 'dashboard/composables';
 import keyboardEventListenerMixins from 'shared/mixins/keyboardEventListenerMixins';
 import { FEATURE_FLAGS } from 'dashboard/featureFlags';
@@ -102,6 +103,9 @@ export default {
     const replyEditor = useTemplateRef('replyEditor');
     const copilot = useCopilotReply();
     const shortcutKey = useKbd(['$mod', '+', 'enter']);
+    // No celular o Enter do teclado quebra linha, como no WhatsApp, e envia-se
+    // pelo botao. Vale so aqui: a preferencia salva no perfil nao muda.
+    const isTouchDevice = useTouchDevice();
 
     return {
       uiSettings,
@@ -113,6 +117,7 @@ export default {
       replyEditor,
       copilot,
       shortcutKey,
+      isTouchDevice,
     };
   },
   data() {
@@ -210,8 +215,12 @@ export default {
         }
         return this.$t('CONVERSATION.FOOTER.MESSAGING_RESTRICTED');
       }
-      return this.isPrivate
-        ? this.$t('CONVERSATION.FOOTER.PRIVATE_MSG_INPUT')
+      if (this.isPrivate) {
+        return this.$t('CONVERSATION.FOOTER.PRIVATE_MSG_INPUT');
+      }
+      // No celular o Enter ja quebra linha: sem a dica de Shift + Enter.
+      return this.isTouchDevice
+        ? this.$t('CONVERSATION.FOOTER.MSG_INPUT_TOUCH')
         : this.$t('CONVERSATION.FOOTER.MSG_INPUT');
     },
     isMessageLengthReachingThreshold() {
@@ -293,6 +302,9 @@ export default {
       let sendMessageText = this.$t('CONVERSATION.REPLYBOX.SEND');
       if (this.isPrivate) {
         sendMessageText = this.$t('CONVERSATION.REPLYBOX.CREATE');
+      }
+      if (this.isTouchDevice) {
+        return sendMessageText;
       }
       const keyLabel = this.isEditorHotKeyEnabled('cmd_enter')
         ? `(${this.shortcutKey})`
@@ -674,7 +686,7 @@ export default {
         },
         Enter: {
           action: e => {
-            if (this.isAValidEvent('enter')) {
+            if (!this.isTouchDevice && this.isAValidEvent('enter')) {
               this.onSendReply();
               e.preventDefault();
             }
@@ -1339,6 +1351,7 @@ export default {
           allow-signature
           :channel-type="channelType"
           :medium="inbox.medium"
+          :override-line-breaks="isTouchDevice"
           @typing-off="onTypingOff"
           @typing-on="onTypingOn"
           @focus="onFocus"

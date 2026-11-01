@@ -1,7 +1,7 @@
 <script setup>
 import { ref, computed } from 'vue';
 import { useAlert } from 'dashboard/composables';
-import { useToggle } from '@vueuse/core';
+import { useToggle, useWindowSize } from '@vueuse/core';
 import { useI18n } from 'vue-i18n';
 import { useStore, useStoreGetters } from 'dashboard/composables/store';
 import { useEmitter } from 'dashboard/composables/emitter';
@@ -28,6 +28,13 @@ const { checkMissingAttributes } = useConversationRequiredAttributes();
 const arrowDownButtonRef = ref(null);
 const isLoading = ref(false);
 const resolveAttributesModalRef = ref(null);
+
+// No celular o cabecalho e uma linha so: Resolver vira icone para sobrar
+// espaco para o nome do contato.
+const { width: windowWidth } = useWindowSize();
+const isSmallScreen = computed(
+  () => windowWidth.value < wootConstants.SMALL_SCREEN_BREAKPOINT
+);
 
 const [showActionsDropdown, toggleDropdown] = useToggle();
 const closeDropdown = () => toggleDropdown(false);
@@ -178,7 +185,8 @@ useEmitter(CMD_RESOLVE_CONVERSATION, onCmdResolveConversation);
     >
       <Button
         v-if="isOpen"
-        :label="t('CONVERSATION.HEADER.RESOLVE_ACTION')"
+        :label="isSmallScreen ? '' : t('CONVERSATION.HEADER.RESOLVE_ACTION')"
+        :icon="isSmallScreen ? 'i-lucide-check' : ''"
         size="sm"
         color="slate"
         no-animation
@@ -221,7 +229,7 @@ useEmitter(CMD_RESOLVE_CONVERSATION, onCmdResolveConversation);
     <div
       v-if="showActionsDropdown"
       v-on-clickaway="closeDropdown"
-      class="border rounded-lg shadow-lg border-n-strong dark:border-n-strong box-content p-2 w-fit z-10 bg-n-alpha-3 backdrop-blur-[100px] absolute block left-auto top-full mt-0.5 start-0 xl:start-auto xl:end-0 max-w-[12.5rem] min-w-[9.75rem] [&_ul>li]:mb-0"
+      class="border rounded-lg shadow-lg border-n-strong dark:border-n-strong box-content p-2 w-fit z-10 bg-n-alpha-3 backdrop-blur-[100px] absolute block left-auto top-full mt-0.5 end-0 md:end-auto md:start-0 xl:start-auto xl:end-0 max-w-[12.5rem] min-w-[9.75rem] [&_ul>li]:mb-0"
     >
       <WootDropdownMenu class="mb-0">
         <WootDropdownItem v-if="!isPending">

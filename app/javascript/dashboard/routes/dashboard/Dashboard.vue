@@ -38,6 +38,9 @@ export default {
     FloatingCallWidget,
     MobileSidebarLauncher,
   },
+  provide() {
+    return { toggleMobileSidebar: this.toggleMobileSidebar };
+  },
   setup() {
     const upgradePageRef = ref(null);
     const { uiSettings, updateUISettings } = useUISettings();
@@ -131,6 +134,13 @@ export default {
 
 <template>
   <div class="flex flex-grow overflow-hidden text-n-slate-12">
+    <!-- Fundo da gaveta no celular: o toque fora so fecha o menu, sem abrir
+    a conversa que estiver embaixo. -->
+    <div
+      v-if="isMobileSidebarOpen"
+      class="fixed inset-0 z-30 bg-n-alpha-black1 md:hidden"
+      @click="closeMobileSidebar"
+    />
     <NextSidebar
       :is-mobile-sidebar-open="isMobileSidebarOpen"
       @toggle-account-modal="toggleAccountModal"

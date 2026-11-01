@@ -1,6 +1,7 @@
 <script setup>
 import { computed } from 'vue';
 import { useStore } from 'vuex';
+import { useWindowSize } from '@vueuse/core';
 import { useMapGetter } from 'dashboard/composables/store';
 import { useAlert } from 'dashboard/composables';
 import { useI18n } from 'vue-i18n';
@@ -24,6 +25,15 @@ const { t } = useI18n();
 
 const currentChat = useMapGetter('getSelectedChat');
 const currentUser = useMapGetter('getCurrentUser');
+
+// O aviso aparece enquanto se digita; no celular, com o teclado aberto, o texto
+// longo ocupava quatro linhas da pouca conversa que sobra visivel.
+const { width: windowWidth } = useWindowSize();
+const notAssignedMessage = computed(() =>
+  windowWidth.value < wootConstants.SMALL_SCREEN_BREAKPOINT
+    ? t('CONVERSATION.NOT_ASSIGNED_TO_YOU_SHORT')
+    : t('CONVERSATION.NOT_ASSIGNED_TO_YOU')
+);
 
 const assignedAgent = computed({
   get() {
@@ -114,7 +124,7 @@ const onClickBotHandoff = async () => {
     action-button-variant="ghost"
     color-scheme="secondary"
     class="mx-2 mb-2 rounded-lg !py-2"
-    :banner-message="$t('CONVERSATION.NOT_ASSIGNED_TO_YOU')"
+    :banner-message="notAssignedMessage"
     has-action-button
     :action-button-label="$t('CONVERSATION.ASSIGN_TO_ME')"
     @primary-action="onClickSelfAssign"

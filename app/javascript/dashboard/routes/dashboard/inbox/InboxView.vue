@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { useStore, useMapGetter } from 'dashboard/composables/store';
 import { useTrack } from 'dashboard/composables';
 import { useUISettings } from 'dashboard/composables/useUISettings';
+import { useContactPanel } from 'dashboard/composables/useContactPanel';
 import { BUS_EVENTS } from 'shared/constants/busEvents';
 import { INBOX_EVENTS } from 'dashboard/helper/AnalyticsHelper/events';
 import { emitter } from 'shared/helpers/mitt';
@@ -19,6 +20,7 @@ const route = useRoute();
 const router = useRouter();
 const store = useStore();
 const { uiSettings } = useUISettings();
+const { isContactPanelOpen: isPanelOpen } = useContactPanel();
 
 const isConversationLoading = ref(false);
 
@@ -66,13 +68,9 @@ const activeNotificationIndex = computed(() => {
   );
 });
 
-const isContactPanelOpen = computed(() => {
-  if (currentChat.value.id) {
-    const { is_contact_sidebar_open: isContactSidebarOpen } = uiSettings.value;
-    return isContactSidebarOpen;
-  }
-  return false;
-});
+const isContactPanelOpen = computed(
+  () => !!currentChat.value.id && isPanelOpen.value
+);
 
 const findConversation = () => {
   return conversationById.value(conversationId.value);

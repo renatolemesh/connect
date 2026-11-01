@@ -2,6 +2,7 @@
 import { mapGetters } from 'vuex';
 import { useUISettings } from 'dashboard/composables/useUISettings';
 import { useAccount } from 'dashboard/composables/useAccount';
+import { useContactPanel } from 'dashboard/composables/useContactPanel';
 import ChatList from '../../../components/ChatList.vue';
 import ConversationBox from '../../../components/widgets/conversation/ConversationBox.vue';
 import wootConstants from 'dashboard/constants/globals';
@@ -56,11 +57,16 @@ export default {
   setup() {
     const { uiSettings, updateUISettings } = useUISettings();
     const { accountId } = useAccount();
+    const { isSmallScreen, isContactPanelOpen, closeContactPanel } =
+      useContactPanel();
 
     return {
       uiSettings,
       updateUISettings,
       accountId,
+      isSmallScreen,
+      isContactPanelOpen,
+      closeContactPanel,
     };
   },
   data() {
@@ -89,17 +95,16 @@ export default {
     },
 
     shouldShowSidebar() {
-      if (!this.currentChat.id) {
-        return false;
-      }
-
-      const { is_contact_sidebar_open: isContactSidebarOpen } = this.uiSettings;
-      return isContactSidebarOpen;
+      return !!this.currentChat.id && this.isContactPanelOpen;
     },
   },
   watch: {
     conversationId() {
       this.fetchConversationIfUnavailable();
+      // No celular o painel cobre a conversa: cada conversa abre sem ele.
+      if (this.isSmallScreen) {
+        this.closeContactPanel();
+      }
     },
   },
 

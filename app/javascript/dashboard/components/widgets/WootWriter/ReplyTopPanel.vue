@@ -146,7 +146,7 @@ export default {
 
 <template>
   <div
-    class="flex justify-between gap-2 h-[3.25rem] items-center ltr:pl-3 ltr:pr-2 rtl:pr-3 rtl:pl-2"
+    class="flex justify-between gap-2 h-11 md:h-[3.25rem] items-center ltr:pl-3 ltr:pr-2 rtl:pr-3 rtl:pl-2"
   >
     <EditorModeToggle
       :mode="mode"
@@ -186,7 +186,7 @@ export default {
       </div>
       <NextButton
         ghost
-        class="text-n-slate-11"
+        class="text-n-slate-11 hidden md:inline-flex"
         sm
         icon="i-lucide-maximize-2"
         @click="$emit('togglePopout')"

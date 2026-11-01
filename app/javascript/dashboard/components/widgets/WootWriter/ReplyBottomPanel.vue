@@ -288,7 +288,7 @@ export default {
 </script>
 
 <template>
-  <div class="flex justify-between p-3" :class="wrapClass">
+  <div class="flex justify-between gap-2 p-2 md:p-3" :class="wrapClass">
     <div class="left-wrap">
       <NextButton
         v-if="!isEditorDisabled"
@@ -423,12 +423,13 @@ export default {
 </template>
 
 <style lang="scss" scoped>
+// Em tela estreita os icones rolam de lado em vez de empurrar o Enviar para fora.
 .left-wrap {
-  @apply items-center flex gap-2;
+  @apply items-center flex gap-2 min-w-0 overflow-x-auto;
 }
 
 .right-wrap {
-  @apply flex;
+  @apply flex flex-shrink-0;
 }
 
 ::v-deep .file-uploads {

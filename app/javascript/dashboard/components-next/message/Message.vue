@@ -3,6 +3,7 @@ import { onMounted, computed, ref, toRefs } from 'vue';
 import { useTimeoutFn } from '@vueuse/core';
 import { provideMessageContext } from './provider.js';
 import { useTrack } from 'dashboard/composables';
+import { useTouchDevice } from 'dashboard/composables/useTouchDevice';
 import { useMapGetter } from 'dashboard/composables/store';
 import { emitter } from 'shared/helpers/mitt';
 import { useI18n } from 'vue-i18n';
@@ -146,6 +147,7 @@ const route = useRoute();
 const inboxGetter = useMapGetter('inboxes/getInbox');
 const inbox = computed(() => inboxGetter.value(props.inboxId) || {});
 const { replaceInstallationName } = useBranding();
+const isTouchDevice = useTouchDevice();
 
 /**
  * Computes the message variant based on props
@@ -428,6 +430,17 @@ function openContextMenu(e) {
   showContextMenu.value = true;
 }
 
+// Toque nao tem clique direito (e o iPhone nao dispara contextmenu no toque
+// longo). No celular, tocar no balao abre o mesmo menu, exceto onde o toque ja
+// faz outra coisa: links, botoes, midia e a citacao da mensagem respondida.
+const TAP_HANDLED_SELECTOR =
+  'a, button, input, audio, video, img, .cursor-pointer, [data-bubble-name="image"], [data-bubble-name="video"]';
+
+function openContextMenuOnTap(e) {
+  if (!isTouchDevice.value || e.target.closest(TAP_HANDLED_SELECTOR)) return;
+  openContextMenu(e);
+}
+
 function closeContextMenu() {
   showContextMenu.value = false;
   contextMenuPosition.value = { x: null, y: null };
@@ -560,6 +573,7 @@ provideMessageContext({
           'min-w-0': variant === MESSAGE_VARIANTS.EMAIL,
         }"
         @contextmenu="openContextMenu($event)"
+        @click="openContextMenuOnTap($event)"
       >
         <Component :is="componentToRender" />
       </div>

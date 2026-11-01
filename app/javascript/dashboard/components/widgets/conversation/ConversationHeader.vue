@@ -1,17 +1,19 @@
 <script setup>
 import { computed, ref } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { useStore } from 'vuex';
 import { useElementSize } from '@vueuse/core';
 import BackButton from '../BackButton.vue';
 import InboxName from '../InboxName.vue';
 import MoreActions from './MoreActions.vue';
 import Avatar from 'next/avatar/Avatar.vue';
+import NextButton from 'dashboard/components-next/button/Button.vue';
 import SLACardLabel from './components/SLACardLabel.vue';
 import wootConstants from 'dashboard/constants/globals';
 import { conversationListPageURL } from 'dashboard/helper/URLHelper';
 import { snoozedReopenTime } from 'dashboard/helper/snoozeHelpers';
 import { useInbox } from 'dashboard/composables/useInbox';
+import { useContactPanel } from 'dashboard/composables/useContactPanel';
 import { useI18n } from 'vue-i18n';
 
 const props = defineProps({
@@ -28,9 +30,11 @@ const props = defineProps({
 const { t } = useI18n();
 const store = useStore();
 const route = useRoute();
+const router = useRouter();
 const conversationHeader = ref(null);
 const { width } = useElementSize(conversationHeader);
 const { isAWebWidgetInbox } = useInbox();
+const { openContactPanel } = useContactPanel();
 
 const currentChat = computed(() => store.getters.getSelectedChat);
 const accountId = computed(() => store.getters.getCurrentAccountId);
@@ -93,56 +97,71 @@ const hasSlaPolicyId = computed(() => props.chat?.sla_policy_id);
 </script>
 
 <template>
+  <!-- Abaixo de md (celular) e uma linha so; de md a xl, duas linhas; acima, uma. -->
   <div
     ref="conversationHeader"
-    class="flex flex-col gap-3 items-center justify-between flex-1 w-full min-w-0 xl:flex-row px-3 pt-3 pb-2 h-24 xl:h-12"
+    class="flex flex-row md:flex-col xl:flex-row gap-2 md:gap-3 items-center justify-between flex-1 w-full min-w-0 px-2 md:px-3 pt-3 pb-2 h-14 md:h-24 xl:h-12"
   >
     <div
-      class="flex items-center justify-start w-full xl:w-auto max-w-full min-w-0 xl:flex-1"
+      class="flex items-center justify-start flex-1 md:flex-initial md:w-full xl:w-auto max-w-full min-w-0 xl:flex-1"
     >
       <BackButton
         v-if="showBackButton"
         :back-url="backButtonUrl"
-        class="ltr:mr-2 rtl:ml-2"
+        class="hidden md:flex ltr:mr-2 rtl:ml-2"
       />
-      <Avatar
-        :name="currentContact.name"
-        :src="currentContact.thumbnail"
-        :size="32"
-        :status="currentContact.availability_status"
-        hide-offline-status
-        rounded-full
+      <NextButton
+        v-if="showBackButton"
+        icon="i-lucide-chevron-left"
+        ghost
+        slate
+        class="md:hidden flex-shrink-0 rtl:rotate-180"
+        @click="router.push(backButtonUrl)"
       />
-      <div
-        class="flex flex-col items-start min-w-0 ml-2 overflow-hidden rtl:ml-0 rtl:mr-2"
+      <button
+        type="button"
+        class="flex items-center min-w-0 text-start"
+        @click="openContactPanel"
       >
-        <div class="flex flex-row items-center max-w-full gap-1 p-0 m-0">
-          <span
-            class="text-sm font-medium truncate leading-tight text-n-slate-12"
-          >
-            {{ currentContact.name }}
-          </span>
-          <fluent-icon
-            v-if="!isHMACVerified"
-            v-tooltip="$t('CONVERSATION.UNVERIFIED_SESSION')"
-            size="14"
-            class="text-n-amber-10 my-0 mx-0 min-w-[14px] flex-shrink-0"
-            icon="warning"
-          />
-        </div>
-
+        <Avatar
+          :name="currentContact.name"
+          :src="currentContact.thumbnail"
+          :size="32"
+          :status="currentContact.availability_status"
+          hide-offline-status
+          rounded-full
+        />
         <div
-          class="flex items-center gap-2 overflow-hidden text-xs conversation--header--actions text-ellipsis whitespace-nowrap"
+          class="flex flex-col items-start min-w-0 ml-2 overflow-hidden rtl:ml-0 rtl:mr-2"
         >
-          <InboxName v-if="hasMultipleInboxes" :inbox="inbox" class="!mx-0" />
-          <span v-if="isSnoozed" class="font-medium text-n-amber-10">
-            {{ snoozedDisplayText }}
-          </span>
+          <div class="flex flex-row items-center max-w-full gap-1 p-0 m-0">
+            <span
+              class="text-sm font-medium truncate leading-tight text-n-slate-12"
+            >
+              {{ currentContact.name }}
+            </span>
+            <fluent-icon
+              v-if="!isHMACVerified"
+              v-tooltip="$t('CONVERSATION.UNVERIFIED_SESSION')"
+              size="14"
+              class="text-n-amber-10 my-0 mx-0 min-w-[14px] flex-shrink-0"
+              icon="warning"
+            />
+          </div>
+
+          <div
+            class="flex items-center gap-2 max-w-full overflow-hidden text-xs conversation--header--actions text-ellipsis whitespace-nowrap"
+          >
+            <InboxName v-if="hasMultipleInboxes" :inbox="inbox" class="!mx-0" />
+            <span v-if="isSnoozed" class="font-medium text-n-amber-10">
+              {{ snoozedDisplayText }}
+            </span>
+          </div>
         </div>
-      </div>
+      </button>
     </div>
     <div
-      class="flex flex-row items-center justify-start xl:justify-end flex-shrink-0 gap-2 w-full xl:w-auto header-actions-wrap"
+      class="flex flex-row items-center justify-start xl:justify-end flex-shrink-0 gap-2 md:w-full xl:w-auto header-actions-wrap"
     >
       <SLACardLabel
         v-if="hasSlaPolicyId"

@@ -7,7 +7,12 @@ import {
   useTemplateRef,
   inject,
 } from 'vue';
-import { useWindowSize, useElementBounding, useScrollLock } from '@vueuse/core';
+import {
+  useWindowSize,
+  useElementBounding,
+  useScrollLock,
+  onClickOutside,
+} from '@vueuse/core';
 
 import TeleportWithDirection from 'dashboard/components-next/TeleportWithDirection.vue';
 
@@ -76,6 +81,10 @@ const handleClose = () => {
   isLocked.value = false;
   emit('close');
 };
+
+// O blur basta no computador, mas o Safari do iPhone nao tira o foco ao tocar
+// num elemento que nao recebe foco, e o menu ficaria aberto.
+onClickOutside(menuRef, handleClose);
 
 onUnmounted(() => {
   isLocked.value = false;

@@ -719,7 +719,33 @@ function handleLineBreakWhenCmdAndEnterToSendEnabled(event) {
   }
 }
 
+// Com overrideLineBreaks (caixa de resposta no celular), o Enter faz o mesmo que
+// o Shift+Enter: quebra de linha simples. O Enter padrao do ProseMirror cria um
+// paragrafo novo, que chega no WhatsApp como uma linha em branco. Com um menu de
+// sugestao aberto, o Enter continua escolhendo o item.
+function insertLineBreakOnEnter(event) {
+  const isSuggestionMenuOpen =
+    showUserMentions.value ||
+    showCannedMenu.value ||
+    showVariables.value ||
+    showEmojiMenu.value ||
+    showToolsMenu.value;
+  if (!hasPressedEnterAndNotCmdOrShift(event) || isSuggestionMenuOpen) return;
+
+  event.preventDefault();
+  const { state: editorState, dispatch } = editorView;
+  dispatch(
+    editorState.tr
+      .replaceSelectionWith(editorState.schema.nodes.hard_break.create())
+      .scrollIntoView()
+  );
+}
+
 function onKeydown(event) {
+  if (props.overrideLineBreaks) {
+    insertLineBreakOnEnter(event);
+    return;
+  }
   if (isEnterToSendEnabled()) {
     handleLineBreakWhenEnterToSendEnabled(event);
   }
@@ -990,8 +1016,10 @@ useEmitter(BUS_EVENTS.INSERT_INTO_RICH_EDITOR, insertContentIntoEditor);
   }
 }
 
+// No celular, com o teclado aberto, cada linha do editor e uma linha a menos de
+// conversa: comeca baixo e cresce com o texto.
 .ProseMirror-woot-style {
-  @apply overflow-auto min-h-[5rem] max-h-[7.5rem];
+  @apply overflow-auto min-h-[2.5rem] max-h-[6rem] md:min-h-[5rem] md:max-h-[7.5rem];
 }
 
 .ProseMirror-prompt {

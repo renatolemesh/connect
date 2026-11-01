@@ -1,5 +1,5 @@
 <script setup>
-import { computed } from 'vue';
+import { computed, inject } from 'vue';
 import { useUISettings } from 'dashboard/composables/useUISettings';
 import { formatNumber } from '@chatwoot/utils';
 import wootConstants from 'dashboard/constants/globals';
@@ -27,6 +27,7 @@ const emit = defineEmits([
 ]);
 
 const { uiSettings, updateUISettings } = useUISettings();
+const toggleMobileSidebar = inject('toggleMobileSidebar');
 
 const onBasicFilterChange = (value, type) => {
   emit('basicFilterChange', value, type);
@@ -63,6 +64,15 @@ const toggleConversationLayout = () => {
     }"
   >
     <div class="flex items-center justify-center min-w-0">
+      <!-- No celular o menu lateral abre por aqui, no lugar do botao flutuante
+      que ficava por cima da lista (ver MobileSidebarLauncher). -->
+      <NextButton
+        icon="i-lucide-menu"
+        ghost
+        slate
+        class="md:hidden flex-shrink-0 ltr:-ml-2 ltr:mr-1 rtl:-mr-2 rtl:ml-1"
+        @click="toggleMobileSidebar"
+      />
       <h1
         class="text-base font-medium truncate text-n-slate-12"
         :title="pageTitle"
@@ -85,6 +95,9 @@ const toggleConversationLayout = () => {
         {{ $t(`CHAT_LIST.CHAT_STATUS_FILTER_ITEMS.${activeStatus}.TEXT`) }}
       </span>
     </div>
+    <!-- Os paineis de filtro sao teleportados para os alvos abaixo. No celular
+    ficam presos sob o cabecalho, na largura da tela: ancorados no botao, sairiam
+    pela esquerda. -->
     <div class="flex items-center gap-1">
       <template v-if="hasAppliedFilters && !hasActiveFolders">
         <div class="relative">
@@ -98,7 +111,7 @@ const toggleConversationLayout = () => {
           />
           <div
             id="saveFilterTeleportTarget"
-            class="absolute z-50 mt-2"
+            class="absolute z-50 mt-2 max-md:fixed max-md:inset-x-2 max-md:top-14 max-md:mt-0"
             :class="{ 'ltr:right-0 rtl:left-0': isOnExpandedLayout }"
           />
         </div>
@@ -124,7 +137,7 @@ const toggleConversationLayout = () => {
           />
           <div
             id="conversationFilterTeleportTarget"
-            class="absolute z-50 mt-2"
+            class="absolute z-50 mt-2 max-md:fixed max-md:inset-x-2 max-md:top-14 max-md:mt-0"
             :class="{ 'ltr:right-0 rtl:left-0': isOnExpandedLayout }"
           />
         </div>
@@ -150,7 +163,7 @@ const toggleConversationLayout = () => {
         />
         <div
           id="conversationFilterTeleportTarget"
-          class="absolute z-50 mt-2"
+          class="absolute z-50 mt-2 max-md:fixed max-md:inset-x-2 max-md:top-14 max-md:mt-0"
           :class="{ 'ltr:right-0 rtl:left-0': isOnExpandedLayout }"
         />
       </div>

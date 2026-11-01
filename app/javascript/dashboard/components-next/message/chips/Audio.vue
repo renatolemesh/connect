@@ -149,7 +149,7 @@ const downloadAudio = async () => {
         />
         <Icon v-else class="size-8" icon="i-teenyicons-play-small-solid" />
       </button>
-      <div class="tabular-nums text-xs">
+      <div class="tabular-nums text-xs whitespace-nowrap">
         {{ formatTime(currentTime) }} / {{ formatTime(duration) }}
       </div>
       <div class="flex-1 items-center flex px-2">
@@ -170,8 +170,9 @@ const downloadAudio = async () => {
           {{ playbackSpeedLabel }}
         </span>
       </button>
+      <!-- No celular o volume e o do aparelho; o espaco vai para a barra. -->
       <button
-        class="p-0 border-0 size-8 grid place-content-center"
+        class="p-0 border-0 size-8 hidden md:grid place-content-center"
         @click="toggleMute"
       >
         <Icon v-if="isMuted" class="size-4" icon="i-lucide-volume-off" />

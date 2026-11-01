@@ -79,7 +79,7 @@ export default {
 
 <template>
   <div
-    class="flex items-center justify-center h-12 gap-4 px-4 py-3 text-xs text-white banner dark:text-white woot-banner"
+    class="flex items-center justify-center min-h-12 gap-4 px-4 py-3 text-xs text-white banner dark:text-white woot-banner"
     :class="bannerClasses"
   >
     <span class="banner-message">
@@ -151,8 +151,10 @@ export default {
     @apply ml-1 underline text-n-amber-12 text-xs;
   }
 
+  // Texto corrido, sem flex: em tela estreita a mensagem e o link quebram
+  // linha juntos em vez de virar duas colunas que vazam da altura do aviso.
   .banner-message {
-    @apply flex items-center;
+    @apply block;
   }
 
   .actions {

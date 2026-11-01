@@ -15,12 +15,23 @@ const emit = defineEmits(['toggle']);
 
 const route = useRoute();
 
+// Nas conversas o botao flutuante cobriria a lista ou a caixa de resposta: a
+// lista tem o proprio botao de menu no cabecalho (ChatListHeader) e a conversa
+// aberta volta para a lista.
 const isConversationRoute = computed(() => {
   const CONVERSATION_ROUTES = [
+    'home',
+    'inbox_dashboard',
+    'label_conversations',
+    'team_conversations',
+    'folder_conversations',
+    'conversation_mentions',
+    'conversation_unattended',
+    'conversation_participating',
     'inbox_conversation',
     'conversation_through_inbox',
     'conversations_through_label',
-    'team_conversations_through_label',
+    'conversations_through_team',
     'conversations_through_folders',
     'conversation_through_mentions',
     'conversation_through_unattended',
