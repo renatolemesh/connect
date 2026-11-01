@@ -33,6 +33,7 @@ class Notification::PushNotificationService
   def push_message
     {
       title: notification.push_message_title,
+      body: notification.push_message_body,
       tag: "#{notification.notification_type}_#{conversation.display_id}_#{notification.id}",
       url: push_url
     }
@@ -57,6 +58,8 @@ class Notification::PushNotificationService
         public_key: VapidService.public_key,
         private_key: VapidService.private_key
       },
+      # Sem isso o Android segura a entrega com o celular em repouso.
+      urgency: 'high',
       ssl_timeout: 5,
       open_timeout: 5,
       read_timeout: 5

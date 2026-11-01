@@ -83,10 +83,22 @@ export const requestPushPermissions = ({ onSuccess }) => {
   } else if (Notification.permission === 'granted') {
     registerSubscription(onSuccess);
   } else if (Notification.permission !== 'denied') {
-    Notification.requestPermission(permission => {
+    // Forma de promise: a de callback nao e garantida no Safari do iPhone.
+    return Notification.requestPermission().then(permission => {
       if (permission === 'granted') {
         registerSubscription(onSuccess);
       }
     });
   }
+  return Promise.resolve();
+};
+
+export const isIOSDevice = () =>
+  /iPhone|iPad|iPod/.test(navigator.userAgent) ||
+  (/Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1);
+
+// iPhone/iPad: no navegador nao existe push; so com o app na Tela de Inicio.
+export const needsHomeScreenForPush = () => {
+  const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+  return isIOSDevice() && !isStandalone && !('PushManager' in window);
 };

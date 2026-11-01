@@ -5,6 +5,7 @@ import NetworkNotification from './components/NetworkNotification.vue';
 import UpdateBanner from './components/app/UpdateBanner.vue';
 import PaymentPendingBanner from './components/app/PaymentPendingBanner.vue';
 import PendingEmailVerificationBanner from './components/app/PendingEmailVerificationBanner.vue';
+import MobileAppBanner from './components/app/MobileAppBanner.vue';
 import vueActionCable from './helper/actionCable';
 import { useRouter } from 'vue-router';
 import { useStore } from 'dashboard/composables/store';
@@ -30,6 +31,7 @@ export default {
     PaymentPendingBanner,
     WootSnackbarBox,
     PendingEmailVerificationBanner,
+    MobileAppBanner,
   },
   setup() {
     const router = useRouter();
@@ -79,6 +81,7 @@ export default {
   mounted() {
     this.initializeColorTheme();
     this.listenToThemeChanges();
+    this.listenToNotificationClicks();
     // If user locale is set, use it; otherwise use account locale
     this.setLocale(
       this.uiSettings?.locale || window.chatwootConfig.selectedLocale
@@ -96,6 +99,14 @@ export default {
     listenToThemeChanges() {
       const mql = window.matchMedia('(prefers-color-scheme: dark)');
       mql.onchange = e => setColorTheme(e.matches);
+    },
+    listenToNotificationClicks() {
+      // sw.js pede para abrir aqui a conversa da notificacao tocada.
+      navigator.serviceWorker?.addEventListener('message', ({ data }) => {
+        if (data?.type === 'notification-click') {
+          this.router.push(new URL(data.url).pathname);
+        }
+      });
     },
     setLocale(locale) {
       this.$root.$i18n.locale = locale;
@@ -138,6 +149,7 @@ export default {
     <template v-if="currentAccountId">
       <PendingEmailVerificationBanner v-if="hideOnOnboardingView" />
       <PaymentPendingBanner v-if="hideOnOnboardingView" />
+      <MobileAppBanner v-if="hideOnOnboardingView" />
     </template>
     <router-view v-slot="{ Component }">
       <transition name="fade" mode="out-in">

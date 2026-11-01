@@ -8,6 +8,15 @@
         interactive-widget faz o teclado do Android encolher a tela em vez de cobri-la. %>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no, user-scalable=0, interactive-widget=resizes-content"/>
     <link rel="icon" type="image/png" sizes="512x512" href="<%= @global_config['LOGO_THUMBNAIL'] %>">
+    <%# Instalavel como app: icone na tela inicial, janela sem barra do navegador e, no
+        iPhone, condicao para receber notificacao push (so funciona instalado). %>
+    <link rel="manifest" href="/manifest.json">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="Connect">
+    <meta name="theme-color" content="#fefefe" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#141517" media="(prefers-color-scheme: dark)">
     <%= csrf_meta_tags %>
     <script>
       window.chatwootConfig = {

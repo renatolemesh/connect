@@ -5,6 +5,7 @@ import TableHeaderCell from 'dashboard/components/widgets/TableHeaderCell.vue';
 import CheckBox from 'v3/components/Form/CheckBox.vue';
 import {
   hasPushPermissions,
+  needsHomeScreenForPush,
   requestPushPermissions,
   verifyServiceWorkerExistence,
 } from 'dashboard/helper/pushHelper.js';
@@ -36,6 +37,18 @@ export default {
     }),
     hasPushAPISupport() {
       return !!('Notification' in window);
+    },
+    // Quando o interruptor nao tem como funcionar, diz o que fazer no lugar dele.
+    pushBlockedMessage() {
+      if (needsHomeScreenForPush()) {
+        return this.$t('APP_GLOBAL.PUSH_BANNER.HOME_SCREEN');
+      }
+      if (this.hasPushAPISupport && Notification.permission === 'denied') {
+        return this.$t(
+          'PROFILE_SETTINGS.FORM.NOTIFICATIONS.BROWSER_PERMISSION_DENIED'
+        );
+      }
+      return '';
     },
     isSLAEnabled() {
       return this.isFeatureEnabledonAccount(this.accountId, FEATURE_FLAGS.SLA);
@@ -281,10 +294,14 @@ export default {
           size="18"
         />
         <span class="text-body-main text-n-slate-12">
-          {{ $t('PROFILE_SETTINGS.FORM.NOTIFICATIONS.BROWSER_PERMISSION') }}
+          {{
+            pushBlockedMessage ||
+            $t('PROFILE_SETTINGS.FORM.NOTIFICATIONS.BROWSER_PERMISSION')
+          }}
         </span>
       </div>
       <ToggleSwitch
+        v-if="!pushBlockedMessage"
         v-model="hasEnabledPushPermissions"
         @change="onRequestPermissions"
       />

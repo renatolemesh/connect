@@ -168,7 +168,8 @@
           "SLA_MISSED_NEXT_RESPONSE": "A conversation misses next response SLA",
           "SLA_MISSED_RESOLUTION": "A conversation misses resolution SLA"
         },
-        "BROWSER_PERMISSION": "Enable push notifications for your browser so you’re able to receive them"
+        "BROWSER_PERMISSION": "Enable push notifications for your browser so you’re able to receive them",
+        "BROWSER_PERMISSION_DENIED": "Notifications are blocked for this site. Allow them in your browser settings."
       },
       "API": {
         "UPDATE_SUCCESS": "Your notification preferences are updated successfully",
@@ -256,6 +257,21 @@
     "EMAIL_VERIFICATION_PENDING": "It seems that you haven't verified your email address yet. Please check your inbox for the verification email.",
     "RESEND_VERIFICATION_MAIL": "Resend verification email",
     "EMAIL_VERIFICATION_SENT": "Verification email has been sent. Please check your inbox.",
+    "INSTALL_APP": {
+      "BANNER": "Install Connect on this phone: it opens like an app and gets notifications.",
+      "INSTALL": "Install",
+      "MENU": "Install the app",
+      "IOS_TITLE": "Install on iPhone",
+      "IOS_STEP_SHARE": "Tap Share (the square with an arrow pointing up). On newer iOS it is inside the ⋯ menu.",
+      "IOS_STEP_ADD": "Scroll down and tap Add to Home Screen.",
+      "IOS_STEP_OPEN": "Open it from the new icon and sign in.",
+      "IOS_CONFIRM": "Got it"
+    },
+    "PUSH_BANNER": {
+      "MESSAGE": "Turn on notifications to know when new messages arrive on this phone.",
+      "ENABLE": "Turn on",
+      "HOME_SCREEN": "To get notifications on iPhone, tap Share → Add to Home Screen and open the app from there."
+    },
     "ACCOUNT_SUSPENDED": {
       "TITLE": "Account Suspended",
       "MESSAGE": "Your account is suspended. Please reach out to the support team for more information."

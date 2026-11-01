@@ -17,6 +17,7 @@ import Button from 'dashboard/components-next/button/Button.vue';
 import SidebarGroup from './SidebarGroup.vue';
 import SidebarProfileMenu from './SidebarProfileMenu.vue';
 import SidebarChangelogCard from './SidebarChangelogCard.vue';
+import SidebarInstallApp from './SidebarInstallApp.vue';
 import SidebarChangelogButton from './SidebarChangelogButton.vue';
 import ChannelLeaf from './ChannelLeaf.vue';
 import ChannelIcon from 'next/icon/ChannelIcon.vue';
@@ -856,6 +857,7 @@ const menuItems = computed(() => {
           isEffectivelyCollapsed
         "
       />
+      <SidebarInstallApp v-if="!isEffectivelyCollapsed" />
       <div
         class="px-1 py-1.5 flex-shrink-0 flex w-full z-50 gap-2 items-center border-t border-n-weak shadow-[0px_-2px_4px_0px_rgba(27,28,29,0.02)]"
         :class="isEffectivelyCollapsed ? 'justify-center' : 'justify-between'"

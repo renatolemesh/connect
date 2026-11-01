@@ -168,7 +168,8 @@
           "SLA_MISSED_NEXT_RESPONSE": "Uma conversa perdeu a a próxima resposta SLA",
           "SLA_MISSED_RESOLUTION": "Uma conversa falhou a SLA de resolução"
         },
-        "BROWSER_PERMISSION": "Ative as notificações Push do seu navegador para que as possa receber"
+        "BROWSER_PERMISSION": "Ative as notificações Push do seu navegador para que as possa receber",
+        "BROWSER_PERMISSION_DENIED": "As notificações estão bloqueadas para este site. Desbloqueie nas definições do navegador."
       },
       "API": {
         "UPDATE_SUCCESS": "As suas preferências de notificação foram atualizadas com sucesso",
@@ -256,6 +257,21 @@
     "EMAIL_VERIFICATION_PENDING": "Parece que o seu endereço de e-mail ainda não foi verificado. Por favor, confira a sua caixa de entrada e siga as instruções para concluir a verificação.",
     "RESEND_VERIFICATION_MAIL": "Reenviar e-mail de verificação",
     "EMAIL_VERIFICATION_SENT": "O e-mail de verificação foi enviado. Por favor, confira a sua caixa de entrada.",
+    "INSTALL_APP": {
+      "BANNER": "Instale o Connect neste telemóvel: abre como app e recebe notificações.",
+      "INSTALL": "Instalar",
+      "MENU": "Instalar a app",
+      "IOS_TITLE": "Instalar no iPhone",
+      "IOS_STEP_SHARE": "Toque em Partilhar (o quadrado com a seta para cima). No iOS mais recente, está no menu ⋯.",
+      "IOS_STEP_ADD": "Desça na lista e toque em Adicionar ao ecrã principal.",
+      "IOS_STEP_OPEN": "Abra pelo novo ícone e inicie sessão.",
+      "IOS_CONFIRM": "Percebi"
+    },
+    "PUSH_BANNER": {
+      "MESSAGE": "Ative as notificações para saber quando chegam mensagens neste telemóvel.",
+      "ENABLE": "Ativar",
+      "HOME_SCREEN": "Para receber notificações no iPhone, toque em Partilhar → Adicionar ao ecrã principal e abra a app a partir daí."
+    },
     "ACCOUNT_SUSPENDED": {
       "TITLE": "Conta Suspensa",
       "MESSAGE": "A sua conta está suspensa. Entre em contato com a equipa de suporte para obter mais informações."
