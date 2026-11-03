@@ -182,12 +182,30 @@ watch([selectedIds, metric, () => props.filters], fetchSeries, { deep: true });
           :aria-label="$t('REPORT.COMPARISON.HEADER')"
           :format-value="formatValue"
           :height="288"
-          show-legend
+          timeseries
         />
         <span v-else class="text-sm text-center text-n-slate-10">
           {{ $t('REPORT.COMPARISON.EMPTY') }}
         </span>
       </div>
     </div>
+    <!-- O BarChart do viz nao tem legenda, e sem ela as cores nao dizem de quem e
+    cada barra, que e o ponto do grafico. -->
+    <ul
+      v-if="!isFetching && hasData"
+      class="flex flex-wrap justify-center gap-x-4 gap-y-1 m-0 mt-2 list-none text-xs text-n-slate-11"
+    >
+      <li
+        v-for="(id, index) in selectedIds"
+        :key="id"
+        class="flex items-center gap-1.5"
+      >
+        <span
+          class="rounded-sm size-2.5"
+          :style="{ backgroundColor: COMPARISON_COLORS[index] }"
+        />
+        {{ nameOf(id) }}
+      </li>
+    </ul>
   </div>
 </template>

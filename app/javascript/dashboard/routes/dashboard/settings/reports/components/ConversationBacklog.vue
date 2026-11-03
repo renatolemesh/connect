@@ -78,6 +78,7 @@ onMounted(fetchBacklog);
           :data="chartData"
           :aria-label="$t('REPORT.BACKLOG.HEADER')"
           :height="288"
+          timeseries
         />
         <span v-else class="text-sm text-n-slate-10">
           {{ $t('REPORT.NO_ENOUGH_DATA') }}

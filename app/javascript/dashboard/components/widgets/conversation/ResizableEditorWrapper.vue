@@ -182,7 +182,7 @@ defineExpose({ toggleEditorExpand, resetEditorHeight });
     }"
   >
     <div
-      class="group absolute inset-x-0 -top-4 z-10 flex h-4 cursor-row-resize select-none items-center justify-center bg-gradient-to-b from-transparent from-10% dark:to-n-surface-1/80 to-n-surface-1/90 backdrop-blur-[0.01875rem]"
+      class="group absolute inset-x-0 -top-4 z-10 hidden md:flex h-4 cursor-row-resize select-none items-center justify-center bg-gradient-to-b from-transparent from-10% dark:to-n-surface-1/80 to-n-surface-1/90 backdrop-blur-[0.01875rem]"
       @mousedown="onResizeStart"
       @touchstart.prevent="onResizeStart"
       @dblclick="resetEditorHeight"
@@ -248,6 +248,25 @@ defineExpose({ toggleEditorExpand, resetEditorHeight });
       @apply min-h-0 flex-1;
 
       height: auto;
+    }
+  }
+
+  // No celular, com o teclado aberto, cada linha do editor e uma linha a menos de
+  // conversa: comeca baixo e cresce com o texto, em vez da altura arrastavel.
+  @media (max-width: 767px) {
+    .resizable-editor-split {
+      height: auto;
+    }
+
+    .resizable-editor-body,
+    .resizable-editor-split .resizable-editor-body {
+      @apply min-h-[2.5rem] max-h-[6rem];
+
+      height: auto;
+    }
+
+    .resizable-editor-split .editor-mount {
+      @apply min-h-0;
     }
   }
 }
