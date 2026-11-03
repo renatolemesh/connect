@@ -114,3 +114,7 @@ docker_data/*
 
 # Ajustes locais de cada stack; o docker-compose.yml e a base comum versionada
 docker-compose.override.yml
+.nodeterm/project.json
+
+# Cache that `rake ruby_llm:refresh_models` writes next to the model registry
+config/llm_models.json.published.json

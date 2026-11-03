@@ -7,6 +7,9 @@
     <%# maximum-scale evita o zoom do iPhone ao tocar na caixa de resposta (fonte < 16px);
         interactive-widget faz o teclado do Android encolher a tela em vez de cobri-la. %>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no, user-scalable=0, interactive-widget=resizes-content"/>
+    <% unless ChatwootApp.chatwoot_cloud? %>
+      <meta name="robots" content="noindex">
+    <% end %>
     <link rel="icon" type="image/png" sizes="512x512" href="<%= @global_config['LOGO_THUMBNAIL'] %>">
     <%# Instalavel como app: icone na tela inicial, janela sem barra do navegador e, no
         iPhone, condicao para receber notificacao push (so funciona instalado). %>
@@ -44,6 +47,8 @@
         enabledLanguages: <%= available_locales_with_name.to_json.html_safe %>,
         helpUrls: <%= feature_help_urls.to_json.html_safe %>,
         inboxEventsEnabled: '<%= ENV['ENABLE_INBOX_EVENTS'].present? %>',
+        searchTimeRangeLimitDays: <%= Limits.search_time_range_limit_days %>,
+        autoResolveMinMinutes: <%= Limits.auto_resolve_min_minutes %>,
         selectedLocale: '<%= I18n.locale %>'
       }
       window.globalConfig = <%= raw @global_config.to_json %>

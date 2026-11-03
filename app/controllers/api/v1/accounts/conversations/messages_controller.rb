@@ -20,7 +20,9 @@ class Api::V1::Accounts::Conversations::MessagesController < Api::V1::Accounts::
 
   def destroy
     ActiveRecord::Base.transaction do
-      message.update!(content: I18n.t('conversations.messages.deleted'), content_type: :text, content_attributes: { deleted: true })
+      # keeps the forward marker so replies to a deleted forward stay out of this conversation
+      message.update!(content: I18n.t('conversations.messages.deleted'), content_type: :text,
+                      content_attributes: message.content_attributes.slice('forwarded_message_id').merge(deleted: true))
       message.attachments.destroy_all
     end
   end
@@ -36,16 +38,13 @@ class Api::V1::Accounts::Conversations::MessagesController < Api::V1::Accounts::
   def translate
     return head :ok if already_translated_content_available?
 
-    translated_content = Integrations::GoogleTranslate::ProcessorService.new(
-      message: message,
-      target_language: permitted_params[:target_language]
-    ).perform
+    translated_content = translate_message
 
     if translated_content.present?
       translations = {}
       translations[permitted_params[:target_language]] = translated_content
       translations = message.translations.merge!(translations) if message.translations.present?
-      message.update!(translations: translations)
+      message.update!(translations: translations, translation_provider: translation_provider)
     end
 
     render json: { content: translated_content }
@@ -55,6 +54,15 @@ class Api::V1::Accounts::Conversations::MessagesController < Api::V1::Accounts::
   end
 
   private
+
+  def translation_provider
+    'google_translate'
+  end
+
+  def translate_message
+    hook = Current.account.hooks.find_by(app_id: 'google_translate')
+    Integrations::GoogleTranslate::ProcessorService.new(hook: hook).translate_message(message, permitted_params[:target_language]) if hook
+  end
 
   def message
     @message ||= @conversation.messages.find(permitted_params[:id])
@@ -68,20 +76,15 @@ class Api::V1::Accounts::Conversations::MessagesController < Api::V1::Accounts::
     message.with_lock do
       next false unless message.failed?
 
-      # For Channel::Api inboxes with a webhook URL, delivery is synchronous and the
-      # message lives in :sending until the webhook responds. Picking that status
-      # up-front avoids a brief "sent" flicker in the UI before the retry lands.
-      target_status = sync_api_delivery_message? ? 'sending' : 'sent'
-      Messages::StatusUpdateService.new(message, target_status).perform
-      previous_source_id = message.source_id
-      retry_attributes = { content_attributes: {} }
-      retry_attributes[:source_id] = nil unless @conversation.inbox.api? || @conversation.inbox.web_widget?
-      message.update!(retry_attributes)
-      if retry_attributes.key?(:source_id) && previous_source_id.present?
-        Rails.logger.info "Cleared older source ID #{previous_source_id} for message #{message.id}"
-      end
+      Messages::StatusUpdateService.new(message, 'sent').perform
+      clear_source_id unless @conversation.inbox.api? || @conversation.inbox.web_widget?
       true
     end
+  end
+
+  def clear_source_id
+    Rails.logger.info "Cleared older source ID #{message.source_id} for message #{message.id}" if message.source_id.present?
+    message.update!(source_id: nil)
   end
 
   def permitted_params
@@ -92,17 +95,11 @@ class Api::V1::Accounts::Conversations::MessagesController < Api::V1::Accounts::
     message.translations.present? && message.translations[permitted_params[:target_language]].present?
   end
 
-  def sync_api_delivery_message?
-    inbox = message.inbox
-    message.outgoing? &&
-      message.source_id.blank? &&
-      inbox.channel_type == 'Channel::Api' &&
-      inbox.channel.webhook_url.present?
-  end
-
   # API inbox check
   def ensure_api_inbox
     # Only API inboxes can update messages
     render json: { error: 'Message status update is only allowed for API inboxes' }, status: :forbidden unless @conversation.inbox.api?
   end
 end
+
+Api::V1::Accounts::Conversations::MessagesController.prepend_mod_with('Api::V1::Accounts::Conversations::MessagesController')

@@ -13,11 +13,17 @@ import AppContainer from './Dashboard.vue';
 import Suspended from './suspended/Index.vue';
 import NoAccounts from './noAccounts/Index.vue';
 import OauthConsent from './oauth/Index.vue';
+import ShopifySelectAccount from './shopify/SelectAccount.vue';
 import OnboardingAccountDetails from './onboarding/Index.vue';
 import OnboardingInboxSetup from './onboarding/InboxSetup.vue';
 
 export default {
   routes: [
+    {
+      path: frontendURL('shopify/select-account'),
+      name: 'shopify_select_account',
+      component: ShopifySelectAccount,
+    },
     {
       path: frontendURL('accounts/:accountId'),
       component: AppContainer,
@@ -69,6 +75,12 @@ export default {
       path: frontendURL('oauth/consent'),
       name: 'mcp_oauth_consent',
       component: OauthConsent,
+    },
+    {
+      // Install links from the tools catalog can't know the account; the router guard moves them into the current one
+      path: frontendURL('captain/toolsets/install'),
+      name: 'captain_toolset_install_link',
+      component: { render: () => null },
     },
   ],
 };

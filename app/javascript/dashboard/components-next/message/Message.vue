@@ -2,6 +2,7 @@
 import { onMounted, computed, ref, toRefs } from 'vue';
 import { useTimeoutFn } from '@vueuse/core';
 import { provideMessageContext } from './provider.js';
+import { isContactSide } from 'dashboard/store/modules/conversations/helpers';
 import { useTrack } from 'dashboard/composables';
 import { useTouchDevice } from 'dashboard/composables/useTouchDevice';
 import { useMapGetter } from 'dashboard/composables/store';
@@ -46,8 +47,11 @@ import WhatsappFlowResponseBubble from './bubbles/WhatsappFlowResponse.vue';
 import WhatsappReferral from './bubbles/Text/WhatsappReferral.vue';
 
 import MessageError from './MessageError.vue';
+import ForwardEmailPanel from './forward/ForwardEmailPanel.vue';
+import ForwardedEmailBanner from './forward/ForwardedEmailBanner.vue';
 import ContextMenu from 'dashboard/modules/conversations/components/MessageContextMenu.vue';
 import { useBranding } from 'shared/composables/useBranding';
+import { useTranslations } from 'dashboard/composables/useTranslations';
 
 /**
  * @typedef {Object} Attachment
@@ -146,6 +150,8 @@ const emit = defineEmits(['retry']);
 const contextMenuPosition = ref({});
 const showBackgroundHighlight = ref(false);
 const showContextMenu = ref(false);
+const showForwardEmail = ref(false);
+const forwardEmailPosition = ref({});
 const { t } = useI18n();
 const route = useRoute();
 const inboxGetter = useMapGetter('inboxes/getInbox');
@@ -153,6 +159,28 @@ const inbox = computed(() => inboxGetter.value(props.inboxId) || {});
 const isOnChatwootCloud = useMapGetter('globalConfig/isOnChatwootCloud');
 const { replaceInstallationName } = useBranding();
 const isTouchDevice = useTouchDevice();
+const autoTranslate = useMapGetter('getAutoTranslate');
+const translationState = useMapGetter('getMessageTranslationState');
+const showingOriginal = ref(false);
+const contactSide = computed(() =>
+  isContactSide(props.messageType, props.sender?.type ?? props.senderType)
+);
+const { translationContent } = useTranslations(
+  computed(() => props.contentAttributes),
+  contactSide
+);
+const displayedContent = computed(() =>
+  showingOriginal.value || !translationContent.value
+    ? props.content
+    : translationContent.value
+);
+
+const isAutoTranslated = computed(() => {
+  const { pending } = translationState.value(props.id);
+  return (
+    !!autoTranslate.value.language && (!!translationContent.value || pending)
+  );
+});
 
 const isCaptainMessage = computed(() => {
   const senderType = props.sender?.type ?? props.senderType;
@@ -373,6 +401,10 @@ const isMessageDeleted = computed(() => {
   return props.contentAttributes?.deleted;
 });
 
+const isForwardedEmail = computed(
+  () => !!props.contentAttributes?.forwardedMessageId && !isMessageDeleted.value
+);
+
 const shouldShowWhatsappReferral = computed(
   () =>
     variant.value === MESSAGE_VARIANTS.USER &&
@@ -383,7 +415,7 @@ const payloadForContextMenu = computed(() => {
   return {
     id: props.id,
     content_attributes: props.contentAttributes,
-    content: props.content,
+    content: displayedContent.value,
     conversation_id: props.conversationId,
   };
 });
@@ -405,11 +437,20 @@ const contextMenuEnabledOptions = computed(() => {
       !isMessageDeleted.value,
     cannedResponse: isOutgoing && hasText && !isMessageDeleted.value,
     copyLink: !isFailedOrProcessing,
-    translate: !isFailedOrProcessing && !isMessageDeleted.value && hasText,
+    translate:
+      !isFailedOrProcessing &&
+      !isMessageDeleted.value &&
+      hasText &&
+      !isAutoTranslated.value,
     replyTo:
       !props.private &&
       props.inboxSupportsReplyTo.outgoing &&
       !isFailedOrProcessing,
+    forwardEmail:
+      props.isEmailInbox &&
+      !props.private &&
+      !isFailedOrProcessing &&
+      !isMessageDeleted.value,
     report:
       isOnChatwootCloud.value &&
       isCaptainMessage.value &&
@@ -474,6 +515,11 @@ function openContextMenuOnTap(e) {
 function closeContextMenu() {
   showContextMenu.value = false;
   contextMenuPosition.value = { x: null, y: null };
+}
+
+function openForwardEmail() {
+  forwardEmailPosition.value = { ...contextMenuPosition.value };
+  showForwardEmail.value = true;
 }
 
 function handleReplyTo() {
@@ -549,6 +595,9 @@ onMounted(setupHighlightTimer);
 
 provideMessageContext({
   ...toRefs(props),
+  showingOriginal,
+  contactSide,
+  isCaptainMessage,
   isPrivate: computed(() => props.private),
   variant,
   orientation,
@@ -601,7 +650,8 @@ provideMessageContext({
         :class="{
           'ltr:ml-8 rtl:mr-8 justify-end': orientation === ORIENTATION.RIGHT,
           'ltr:mr-8 rtl:ml-8': orientation === ORIENTATION.LEFT,
-          'flex-col items-start gap-2': shouldShowWhatsappReferral,
+          'flex-col items-start gap-2':
+            shouldShowWhatsappReferral || isForwardedEmail,
         }"
         @contextmenu="openContextMenu($event)"
         @click="openContextMenuOnTap($event)"
@@ -610,6 +660,7 @@ provideMessageContext({
           v-if="shouldShowWhatsappReferral"
           :referral="contentAttributes.referral"
         />
+        <ForwardedEmailBanner v-if="isForwardedEmail" />
         <Component :is="componentToRender" />
       </div>
       <MessageError
@@ -631,6 +682,13 @@ provideMessageContext({
         @open="openContextMenu"
         @close="closeContextMenu"
         @reply-to="handleReplyTo"
+        @forward-email="openForwardEmail"
+      />
+      <ForwardEmailPanel
+        v-if="showForwardEmail"
+        :x="forwardEmailPosition.x"
+        :y="forwardEmailPosition.y"
+        @close="showForwardEmail = false"
       />
     </div>
   </div>
