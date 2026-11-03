@@ -1,5 +1,6 @@
 export const LOCAL_STORAGE_KEYS = {
   DISMISSED_UPDATES: 'dismissedUpdates',
+  DISMISSED_PLATFORM_BANNERS: 'dismissedPlatformBanners',
   WIDGET_BUILDER: 'widgetBubble_',
   DRAFT_MESSAGES: 'draftMessages',
   COLOR_SCHEME: 'color_scheme',
@@ -8,4 +9,6 @@ export const LOCAL_STORAGE_KEYS = {
   RECENT_SEARCHES: 'recentSearches',
   DISMISSED_PUSH_BANNER: 'dismissedPushBanner',
   DISMISSED_INSTALL_BANNER: 'dismissedInstallBanner',
+  SIDEBAR_MINIMIZED_SECTIONS: 'sidebarMinimizedSections',
+  CAPTAIN_OVERVIEW_V2: 'captain_overview_v2',
 };

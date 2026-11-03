@@ -12,8 +12,6 @@ import {
   COMPARISON_COLORS,
   COMPARISON_METRICS,
   MAX_COMPARISON_ENTITIES,
-  DEFAULT_CHART,
-  TIME_CHART_CONFIG,
 } from '../constants';
 
 const props = defineProps({
@@ -89,34 +87,25 @@ const fetchSeries = async () => {
   }
 };
 
-const collection = computed(() => {
+const chartData = computed(() => {
   const first = series.value[selectedIds.value[0]] ?? [];
   return {
-    labels: first.map(point => format(fromUnixTime(point.timestamp), 'dd-MMM')),
-    datasets: selectedIds.value.map((id, index) => ({
-      type: 'bar',
-      backgroundColor: COMPARISON_COLORS[index],
+    categories: first.map(point =>
+      format(fromUnixTime(point.timestamp), 'dd-MMM')
+    ),
+    series: selectedIds.value.map((id, index) => ({
+      id: String(id),
       label: nameOf(id),
-      data: (series.value[id] ?? []).map(point => point.value),
+      color: COMPARISON_COLORS[index],
+      data: (series.value[id] ?? []).map(point => Number(point.value)),
     })),
   };
 });
 
-const chartOptions = computed(() => ({
-  scales: isTimeMetric.value ? TIME_CHART_CONFIG.scales : DEFAULT_CHART.scales,
-  plugins: {
-    // Sem legenda as cores nao dizem de quem e cada barra, que e o ponto do grafico.
-    legend: { display: true, position: 'bottom' },
-    ...(isTimeMetric.value && {
-      tooltip: {
-        callbacks: {
-          label: ({ raw, dataset }) =>
-            `${dataset.label}: ${formatTime(raw || 0)}`,
-        },
-      },
-    }),
-  },
-}));
+const formatValue = value =>
+  isTimeMetric.value
+    ? formatTime(value || 0)
+    : Number(value).toLocaleString();
 
 const hasData = computed(() =>
   selectedIds.value.some(id => (series.value[id] ?? []).length)
@@ -191,8 +180,11 @@ watch([selectedIds, metric, () => props.filters], fetchSeries, { deep: true });
       <div v-else class="flex items-center justify-center h-72">
         <BarChart
           v-if="hasData"
-          :collection="collection"
-          :chart-options="chartOptions"
+          :data="chartData"
+          :aria-label="$t('REPORT.COMPARISON.HEADER')"
+          :format-value="formatValue"
+          :height="288"
+          show-legend
         />
         <span v-else class="text-sm text-center text-n-slate-10">
           {{ $t('REPORT.COMPARISON.EMPTY') }}

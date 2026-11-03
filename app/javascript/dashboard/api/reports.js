@@ -47,6 +47,44 @@ class ReportsAPI extends ApiClient {
     });
   }
 
+  getDrilldown({
+    metric,
+    bucketTimestamp,
+    from,
+    to,
+    type,
+    id,
+    groupBy,
+    businessHours,
+    page,
+    perPage,
+    signal,
+    conversationFilters,
+  }) {
+    const requestConfig = {
+      params: {
+        metric,
+        bucket_timestamp: bucketTimestamp,
+        since: from,
+        until: to,
+        type,
+        id,
+        group_by: groupBy,
+        business_hours: businessHours,
+        timezone_offset: getTimeOffset(),
+        page,
+        per_page: perPage,
+        ...conversationFilterParams(conversationFilters),
+      },
+    };
+
+    if (signal) {
+      requestConfig.signal = signal;
+    }
+
+    return axios.get(`${this.url}/drilldown`, requestConfig);
+  }
+
   getSummary(
     since,
     until,

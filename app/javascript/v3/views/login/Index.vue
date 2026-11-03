@@ -5,8 +5,6 @@ import { mapGetters } from 'vuex';
 import { useAlert } from 'dashboard/composables';
 import { required, email } from '@vuelidate/validators';
 import { useVuelidate } from '@vuelidate/core';
-import { SESSION_STORAGE_KEYS } from 'dashboard/constants/sessionStorage';
-import SessionStorage from 'shared/helpers/sessionStorage';
 import { useBranding } from 'shared/composables/useBranding';
 
 // components
@@ -48,6 +46,8 @@ export default {
         showLoading: false,
         hasErrored: false,
       },
+      mfaRequired: false,
+      mfaToken: null,
     };
   },
 
@@ -74,13 +74,38 @@ export default {
       this.loginApi.showLoading = true;
 
       login(this.credentials)
-        .then(() => {
+        .then(result => {
+          // Quando o backend pede segundo fator, login() NAO redireciona:
+          // devolve { mfaRequired, mfaToken } e espera a verificacao.
+          // Redirecionar aqui era o que mantinha o MFA quebrado.
+          if (result?.mfaRequired) {
+            this.loginApi.showLoading = false;
+            this.mfaRequired = true;
+            this.mfaToken = result.mfaToken;
+            return;
+          }
+          // Idem para o limite de sessoes. Este login ainda nao mostra a
+          // tela de revogacao, entao avisamos em vez de cair num bounce.
+          if (result?.sessionsLimitReached) {
+            this.loginApi.showLoading = false;
+            useAlert(this.$t('LOGIN.API.UNAUTH'));
+            return;
+          }
           window.location = '/app';
         })
         .catch(() => {
           this.loginApi.showLoading = false;
           useAlert(this.$t('LOGIN.API.UNAUTH'));
         });
+    },
+    handleMfaVerified() {
+      // MfaVerification ja gravou as credenciais no emit 'verified'.
+      window.location = '/app';
+    },
+    handleMfaCancel() {
+      this.mfaRequired = false;
+      this.mfaToken = null;
+      this.credentials.password = '';
     },
   },
 
@@ -176,6 +201,18 @@ export default {
     </section>
 
     <section
+      v-if="mfaRequired"
+      class="login-card sm:mx-auto mt-11 sm:w-full sm:max-w-lg p-11"
+    >
+      <MfaVerification
+        :mfa-token="mfaToken"
+        @verified="handleMfaVerified"
+        @cancel="handleMfaCancel"
+      />
+    </section>
+
+    <section
+      v-else
       class="login-card sm:mx-auto mt-11 sm:w-full sm:max-w-lg p-11"
     >
       <form class="space-y-5" @submit.prevent="submitFormLogin">

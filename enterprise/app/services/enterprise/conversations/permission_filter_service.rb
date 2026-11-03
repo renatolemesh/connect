@@ -42,7 +42,7 @@ module Enterprise::Conversations::PermissionFilterService
                                 .where('conversations.team_id IN (?) OR conversations.team_id IS NULL', user_team_ids)
       ]
     elsif permissions.include?('conversation_participating_manage')
-      [accessible_conversations.assigned_to(user)]
+      [filter_participating_and_mine]
     else
       []
     end
@@ -58,5 +58,14 @@ module Enterprise::Conversations::PermissionFilterService
     Conversation.from("(#{scopes.map(&:to_sql).join(' UNION ')}) as conversations")
                 .where(account_id: account.id)
                 .includes(conversations.includes_values)
+  end
+
+  def filter_participating_and_mine
+    conversations = accessible_conversations
+    participant_conversation_ids = ConversationParticipant.where(account_id: account.id, user_id: user.id).select(:conversation_id)
+
+    conversations
+      .where(assignee_id: user.id)
+      .or(conversations.where(id: participant_conversation_ids))
   end
 end

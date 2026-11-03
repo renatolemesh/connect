@@ -34,7 +34,7 @@
 #  index_messages_on_conversation_id                    (conversation_id)
 #  index_messages_on_created_at                         (created_at)
 #  index_messages_on_inbox_id                           (inbox_id)
-#  index_messages_on_sender_type_and_sender_id          (sender_type,sender_id)
+#  index_messages_on_sender_and_created                 (sender_type,sender_id,created_at)
 #  index_messages_on_source_id                          (source_id)
 #
 
@@ -55,6 +55,7 @@ class Message < ApplicationRecord
           'category': { 'type': 'string' },
           'language': { 'type': 'string' },
           'namespace': { 'type': 'string' },
+          'content_mode': { 'type': 'string', 'enum': %w[raw_template rendered] },
           'processed_params': { 'type': 'object' }
         },
         'required': %w[name]
@@ -82,6 +83,8 @@ class Message < ApplicationRecord
 
   # when you have a temperory id in your frontend and want it echoed back via action cable
   attr_accessor :echo_id
+  # Transient flag used to skip waiting_since clearing for specific bot/system messages.
+  attr_accessor :preserve_waiting_since
 
   enum message_type: { incoming: 0, outgoing: 1, activity: 2, template: 3 }
   enum content_type: {
@@ -126,7 +129,7 @@ class Message < ApplicationRecord
 
   belongs_to :account
   belongs_to :inbox
-  belongs_to :conversation, touch: true
+  belongs_to :conversation
   belongs_to :sender, polymorphic: true, optional: true
 
   has_many :attachments, dependent: :destroy, autosave: true, before_add: :validate_attachments_limit
@@ -182,13 +185,20 @@ class Message < ApplicationRecord
     data
   end
 
+  def webhook_push_event_data
+    push_event_data.merge(
+      content: Messages::WebhookContentNormalizer.normalize(content),
+      processed_message_content: Messages::WebhookContentNormalizer.normalize(processed_message_content)
+    )
+  end
+
   def webhook_data
     data = {
       account: account.webhook_data,
       additional_attributes: additional_attributes,
       content_attributes: content_attributes,
       content_type: content_type,
-      content: outgoing_content,
+      content: webhook_content,
       conversation: conversation.webhook_data,
       created_at: created_at,
       id: id,
@@ -205,6 +215,11 @@ class Message < ApplicationRecord
   # Method to get content with survey URL for outgoing channel delivery
   def outgoing_content
     MessageContentPresenter.new(self).outgoing_content
+  end
+
+  # Raw content with survey URL (no markdown rendering) for webhook consumers
+  def webhook_content
+    MessageContentPresenter.new(self).webhook_content
   end
 
   def email_notifiable_message?
@@ -351,20 +366,24 @@ class Message < ApplicationRecord
   end
 
   def update_waiting_since
-    waiting_present = conversation.waiting_since.present?
+    clear_waiting_since_on_outgoing_response if conversation.waiting_since.present? && !private
+    set_waiting_since_on_incoming_message
+  end
 
-    if waiting_present && !private
-      if human_response?
-        Rails.configuration.dispatcher.dispatch(
-          REPLY_CREATED, Time.zone.now, waiting_since: conversation.waiting_since, message: self
-        )
-        conversation.update(waiting_since: nil)
-      elsif bot_response?
-        # Bot responses also clear waiting_since (simpler than checking on next customer message)
-        conversation.update(waiting_since: nil)
-      end
+  def clear_waiting_since_on_outgoing_response
+    if human_response?
+      Rails.configuration.dispatcher.dispatch(
+        REPLY_CREATED, Time.zone.now, waiting_since: conversation.waiting_since, message: self
+      )
+      conversation.update(waiting_since: nil)
+      return
     end
 
+    # Bot responses also clear waiting_since (simpler than checking on next customer message)
+    conversation.update(waiting_since: nil) if bot_response? && !preserve_waiting_since
+  end
+
+  def set_waiting_since_on_incoming_message
     # Set waiting_since when customer sends a message (if currently blank)
     conversation.update(waiting_since: created_at) if incoming? && conversation.waiting_since.blank?
   end
@@ -465,7 +484,7 @@ class Message < ApplicationRecord
     received = additional_attributes&.dig('received_at')
     activity_at = (Time.zone.parse(received.to_s) rescue nil) || created_at
     # rubocop:disable Rails/SkipsModelValidations
-    conversation.update_columns(last_activity_at: activity_at)
+    conversation.update_columns(last_activity_at: activity_at, updated_at: Time.current)
     # rubocop:enable Rails/SkipsModelValidations
     sync_conversation_last_message
   end
@@ -494,8 +513,11 @@ class Message < ApplicationRecord
   end
 
   def reindex_for_search
+    return unless respond_to?(:reindex)
+
     reindex(mode: :async)
   end
 end
 
 Message.prepend_mod_with('Message')
+Message.include_mod_with('Concerns::Message')

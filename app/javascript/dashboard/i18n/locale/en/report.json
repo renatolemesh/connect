@@ -4,9 +4,62 @@
     "LOADING_CHART": "Loading chart data...",
     "NO_ENOUGH_DATA": "We've not received enough data points to generate report, Please try again later.",
     "DOWNLOAD_CONVERSATION_REPORTS": "Download conversation reports",
-    "DOWNLOAD_AGENT_REPORTS": "Download agent reports",
     "DATA_FETCHING_FAILED": "Failed to fetch data, please try again later.",
     "SUMMARY_FETCHING_FAILED": "Failed to fetch summary, please try again later.",
+    "METRICS": {
+      "CONVERSATIONS": {
+        "NAME": "Conversations",
+        "DESC": "Opened in the period",
+        "INFO_TEXT": "Number of conversations created in the selected period, counted by creation date."
+      },
+      "INCOMING_MESSAGES": {
+        "NAME": "Messages received",
+        "DESC": "Sent by customers",
+        "INFO_TEXT": "Total incoming messages in the period. Counts messages, not conversations."
+      },
+      "OUTGOING_MESSAGES": {
+        "NAME": "Messages sent",
+        "DESC": "Sent by agents and bots",
+        "INFO_TEXT": "Total outgoing messages in the period, bot replies included. Counts messages, not conversations."
+      },
+      "FIRST_RESPONSE_TIME": {
+        "NAME": "First response time",
+        "DESC": "Average per conversation",
+        "INFO_TEXT": "Average time between a conversation being opened and the first agent reply. Only conversations that received their first reply within the period are counted. With the business hours filter on, only time inside working hours is counted.",
+        "TOOLTIP_DESCRIPTION": "Based on {count} conversation | Based on {count} conversations",
+        "TOOLTIP_TEXT": "First Response Time is {metricValue} (based on {conversationCount} conversations)"
+      },
+      "RESOLUTION_TIME": {
+        "NAME": "Resolution time",
+        "DESC": "Average per resolution",
+        "INFO_TEXT": "Average time between a conversation being opened and being resolved. Every resolution counts: a conversation reopened and resolved again enters the average twice. With the business hours filter on, only time inside working hours is counted.",
+        "TOOLTIP_DESCRIPTION": "Based on {count} conversation | Based on {count} conversations",
+        "TOOLTIP_TEXT": "Resolution Time is {metricValue} (based on {conversationCount} conversations)"
+      },
+      "RESOLUTION_COUNT": {
+        "NAME": "Conversations resolved",
+        "DESC": "Resolutions in the period",
+        "INFO_TEXT": "How many times a conversation was resolved in the period. Counts resolutions, not distinct conversations: reopening and resolving again counts twice."
+      },
+      "BOT_RESOLUTION_COUNT": {
+        "NAME": "Resolved by the bot",
+        "DESC": "Resolutions without an agent",
+        "INFO_TEXT": "How many times the bot resolved a conversation without handing it off to an agent. Counts resolutions, not distinct conversations."
+      },
+      "BOT_HANDOFF_COUNT": {
+        "NAME": "Handed off to agents",
+        "DESC": "Distinct conversations",
+        "INFO_TEXT": "How many distinct conversations the bot handed off to a human agent in the period. Unlike the other counters, repeated handoffs within the same conversation count once."
+      },
+      "REPLY_TIME": {
+        "NAME": "Customer waiting time",
+        "TOOLTIP_LABEL": "Waiting time",
+        "TOOLTIP_DESCRIPTION": "Based on {count} reply | Based on {count} replies",
+        "TOOLTIP_TEXT": "Waiting time is {metricValue} (based on {conversationCount} replies)",
+        "DESC": "Average per reply",
+        "INFO_TEXT": "Average time a customer waits between their message and the agent's next reply, across every reply in the conversation — not just the first. With the business hours filter on, only time inside working hours is counted."
+      }
+    },
     "DATE_RANGE_OPTIONS": {
       "LAST_7_DAYS": "Last 7 days",
       "LAST_14_DAYS": "Last 14 days",
@@ -25,11 +78,11 @@
     "GROUP_BY_FILTER_DROPDOWN_LABEL": "Group By",
     "DURATION_FILTER_LABEL": "Duration",
     "GROUPING_OPTIONS": {
-      "HOUR": "Hour",
       "DAY": "Day",
       "WEEK": "Week",
       "MONTH": "Month",
-      "YEAR": "Year"
+      "YEAR": "Year",
+      "HOUR": "Hour"
     },
     "GROUP_BY_DAY_OPTIONS": [
       {
@@ -80,10 +133,30 @@
       "CLEAR_FILTER": "Clear filter",
       "EMPTY_LIST": "No results found"
     },
+    "DRILLDOWN": {
+      "TITLE": "{metric} details",
+      "RESULT_COUNT_CONVERSATION": "{count} conversation | {count} conversations",
+      "RESULT_COUNT_MESSAGE": "{count} message | {count} messages",
+      "EMPTY": "No records found for this bar.",
+      "ERROR": "Could not load records. Please try again.",
+      "ADMIN_ONLY": "Only administrators can drill down into report records.",
+      "LOAD_MORE": "Load more",
+      "PREVIOUS_BUCKET": "Previous bar",
+      "NEXT_BUCKET": "Next bar",
+      "UNKNOWN_CONTACT": "Unknown contact",
+      "UNKNOWN_INBOX": "Unknown inbox",
+      "UNASSIGNED_AGENT": "Unassigned",
+      "NO_MESSAGE_CONTENT": "No message content",
+      "MESSAGE_CREATED_AT": "Message created at {time}",
+      "EVENT_OCCURRED_AT": "Event occurred at {time}",
+      "INCOMING_MESSAGE": "Incoming message",
+      "OUTGOING_MESSAGE": "Outgoing message"
+    },
     "PAGINATION": {
       "RESULTS": "Showing {start} to {end} of {total} results",
       "PER_PAGE_TEMPLATE": "{size} / page"
     },
+    "DOWNLOAD_AGENT_REPORTS": "Download agent reports",
     "TREND_INFO": "Compared with {value} in the previous period of the same length.",
     "PERCENTILES": {
       "HEADER": "Response time percentiles",
@@ -151,57 +224,7 @@
       "INBOX": "Inbox",
       "EMPTY": "No labelled conversations in this period."
     },
-    "BUSINESS_HOURS_HELP": "Restricts the time metrics to the working hours configured on each inbox. An inbox with no working hours set contributes zero, so the averages can read as 0 when nothing is configured.",
-    "METRICS": {
-      "CONVERSATIONS": {
-        "NAME": "Conversations",
-        "DESC": "Opened in the period",
-        "INFO_TEXT": "Number of conversations created in the selected period, counted by creation date."
-      },
-      "INCOMING_MESSAGES": {
-        "NAME": "Messages received",
-        "DESC": "Sent by customers",
-        "INFO_TEXT": "Total incoming messages in the period. Counts messages, not conversations."
-      },
-      "OUTGOING_MESSAGES": {
-        "NAME": "Messages sent",
-        "DESC": "Sent by agents and bots",
-        "INFO_TEXT": "Total outgoing messages in the period, bot replies included. Counts messages, not conversations."
-      },
-      "FIRST_RESPONSE_TIME": {
-        "NAME": "First response time",
-        "DESC": "Average per conversation",
-        "INFO_TEXT": "Average time between a conversation being opened and the first agent reply. Only conversations that received their first reply within the period are counted. With the business hours filter on, only time inside working hours is counted.",
-        "TOOLTIP_TEXT": "First Response Time is {metricValue} (based on {conversationCount} conversations)"
-      },
-      "RESOLUTION_TIME": {
-        "NAME": "Resolution time",
-        "DESC": "Average per resolution",
-        "INFO_TEXT": "Average time between a conversation being opened and being resolved. Every resolution counts: a conversation reopened and resolved again enters the average twice. With the business hours filter on, only time inside working hours is counted.",
-        "TOOLTIP_TEXT": "Resolution Time is {metricValue} (based on {conversationCount} conversations)"
-      },
-      "RESOLUTION_COUNT": {
-        "NAME": "Conversations resolved",
-        "DESC": "Resolutions in the period",
-        "INFO_TEXT": "How many times a conversation was resolved in the period. Counts resolutions, not distinct conversations: reopening and resolving again counts twice."
-      },
-      "BOT_RESOLUTION_COUNT": {
-        "NAME": "Resolved by the bot",
-        "DESC": "Resolutions without an agent",
-        "INFO_TEXT": "How many times the bot resolved a conversation without handing it off to an agent. Counts resolutions, not distinct conversations."
-      },
-      "BOT_HANDOFF_COUNT": {
-        "NAME": "Handed off to agents",
-        "DESC": "Distinct conversations",
-        "INFO_TEXT": "How many distinct conversations the bot handed off to a human agent in the period. Unlike the other counters, repeated handoffs within the same conversation count once."
-      },
-      "REPLY_TIME": {
-        "NAME": "Customer waiting time",
-        "DESC": "Average per reply",
-        "INFO_TEXT": "Average time a customer waits between their message and the agent's next reply, across every reply in the conversation — not just the first. With the business hours filter on, only time inside working hours is counted.",
-        "TOOLTIP_TEXT": "Waiting time is {metricValue} (based on {conversationCount} replies)"
-      }
-    }
+    "BUSINESS_HOURS_HELP": "Restricts the time metrics to the working hours configured on each inbox. An inbox with no working hours set contributes zero, so the averages can read as 0 when nothing is configured."
   },
   "AGENT_REPORTS": {
     "HEADER": "Agents Overview",
@@ -602,6 +625,7 @@
   "OVERVIEW_REPORTS": {
     "HEADER": "Overview",
     "LIVE": "Live",
+    "HEATMAP_ARIA_LABEL": "{metric} by day and hour",
     "ACCOUNT_CONVERSATIONS": {
       "HEADER": "Open Conversations",
       "LOADING_MESSAGE": "Loading conversation metrics...",

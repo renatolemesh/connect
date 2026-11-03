@@ -180,7 +180,13 @@ export default {
         @filter-change="onConversationFilterChange"
       />
     </ReportFilters>
-    <ReportContainer :group-by="groupBy" />
+    <ReportContainer
+      :group-by="groupBy"
+      :from="from"
+      :to="to"
+      :business-hours="businessHours"
+      :conversation-filters="conversationFilters"
+    />
     <ResponseTimePercentiles :filters="reportFilters" />
     <ConversationBacklog :filters="reportFilters" />
     <ConversationFunnel :filters="reportFilters" />

@@ -4,15 +4,64 @@
     "LOADING_CHART": "Carregando dados do gráfico...",
     "NO_ENOUGH_DATA": "Não existem dados suficientes para gerar o relatório. Tente novamente mais tarde.",
     "DOWNLOAD_CONVERSATION_REPORTS": "Baixar relatórios de conversas",
-    "DOWNLOAD_AGENT_REPORTS": "Baixar relatórios de agentes",
     "DATA_FETCHING_FAILED": "Falha ao buscar dados, tente novamente mais tarde.",
     "SUMMARY_FETCHING_FAILED": "Não foi possível obter o resumo. Tente novamente mais tarde.",
+    "METRICS": {
+      "CONVERSATIONS": {
+        "NAME": "Conversas",
+        "DESC": "Abertas no período",
+        "INFO_TEXT": "Número de conversas criadas no período selecionado, contadas pela data de criação."
+      },
+      "INCOMING_MESSAGES": {
+        "NAME": "Mensagens recebidas",
+        "DESC": "Enviadas pelos clientes",
+        "INFO_TEXT": "Total de mensagens recebidas no período. Conta mensagens, não conversas."
+      },
+      "OUTGOING_MESSAGES": {
+        "NAME": "Mensagens enviadas",
+        "DESC": "Enviadas por agentes e bots",
+        "INFO_TEXT": "Total de mensagens enviadas no período, incluindo as respostas do bot. Conta mensagens, não conversas."
+      },
+      "FIRST_RESPONSE_TIME": {
+        "NAME": "Tempo de primeira resposta",
+        "DESC": "Média por conversa",
+        "INFO_TEXT": "Tempo médio entre a abertura da conversa e a primeira resposta de um agente. Considera apenas as conversas que receberam a primeira resposta dentro do período. Com o filtro de horário comercial ligado, conta só o tempo dentro do expediente.",
+        "TOOLTIP_TEXT": "O Tempo de Primeira Resposta é de {metricValue} (com base em {conversationCount} conversas)"
+      },
+      "RESOLUTION_TIME": {
+        "NAME": "Tempo de resolução",
+        "DESC": "Média por resolução",
+        "INFO_TEXT": "Tempo médio entre a abertura da conversa e o seu encerramento. Cada encerramento entra na média: uma conversa reaberta e encerrada de novo conta duas vezes. Com o filtro de horário comercial ligado, conta só o tempo dentro do expediente.",
+        "TOOLTIP_TEXT": "O Tempo de Resolução é de {metricValue} (com base em {conversationCount} conversas)"
+      },
+      "RESOLUTION_COUNT": {
+        "NAME": "Conversas resolvidas",
+        "DESC": "Encerramentos no período",
+        "INFO_TEXT": "Quantas vezes uma conversa foi resolvida no período. Conta encerramentos, não conversas distintas: reabrir e resolver de novo conta duas vezes."
+      },
+      "BOT_RESOLUTION_COUNT": {
+        "NAME": "Resolvidas pelo bot",
+        "DESC": "Encerramentos sem agente",
+        "INFO_TEXT": "Quantas vezes o bot resolveu uma conversa sem repassar para um agente. Conta encerramentos, não conversas distintas."
+      },
+      "BOT_HANDOFF_COUNT": {
+        "NAME": "Repassadas para agentes",
+        "DESC": "Conversas distintas",
+        "INFO_TEXT": "Quantas conversas distintas o bot repassou para um agente humano no período. Diferente dos outros contadores, repasses repetidos na mesma conversa contam uma vez só."
+      },
+      "REPLY_TIME": {
+        "NAME": "Tempo de espera do cliente",
+        "TOOLTIP_TEXT": "O Tempo de Espera é {metricValue} (com base em {conversationCount} respostas)",
+        "DESC": "Média por resposta",
+        "INFO_TEXT": "Tempo médio que o cliente espera entre a mensagem dele e a próxima resposta do agente, considerando todas as respostas da conversa — não só a primeira. Com o filtro de horário comercial ligado, conta só o tempo dentro do expediente."
+      }
+    },
     "DATE_RANGE_OPTIONS": {
       "LAST_7_DAYS": "Últimos 7 dias",
       "LAST_14_DAYS": "Últimos 14 dias",
       "LAST_30_DAYS": "Últimos 30 dias",
-      "THIS_MONTH": "This month",
-      "LAST_MONTH": "Last month",
+      "THIS_MONTH": "Este mês",
+      "LAST_MONTH": "Último mês",
       "LAST_3_MONTHS": "Últimos 3 meses",
       "LAST_6_MONTHS": "Últimos 6 meses",
       "LAST_YEAR": "Ano passado",
@@ -25,11 +74,11 @@
     "GROUP_BY_FILTER_DROPDOWN_LABEL": "Agrupar por",
     "DURATION_FILTER_LABEL": "Duração",
     "GROUPING_OPTIONS": {
-      "HOUR": "Hora",
       "DAY": "Dia",
       "WEEK": "Semana",
       "MONTH": "Mês",
-      "YEAR": "Ano"
+      "YEAR": "Ano",
+      "HOUR": "Hora"
     },
     "GROUP_BY_DAY_OPTIONS": [
       {
@@ -80,9 +129,28 @@
       "CLEAR_FILTER": "Limpar filtros",
       "EMPTY_LIST": "Nenhum resultado encontrado"
     },
+    "DRILLDOWN": {
+      "TITLE": "Detalhes de {metric}",
+      "RESULT_COUNT_CONVERSATION": "{count} conversa | {count} conversas",
+      "RESULT_COUNT_MESSAGE": "{count} mensagem | {count} mensagens",
+      "EMPTY": "Nenhum registro encontrado para esta barra.",
+      "ERROR": "Não foi possível carregar os registros. Por favor, tente novamente.",
+      "ADMIN_ONLY": "Apenas administradores podem visualizar os detalhes dos registros do relatório.",
+      "LOAD_MORE": "Carregar mais",
+      "PREVIOUS_BUCKET": "Barra anterior",
+      "NEXT_BUCKET": "Próxima barra",
+      "UNKNOWN_CONTACT": "Contato desconhecido",
+      "UNKNOWN_INBOX": "Caixa de entrada desconhecida",
+      "UNASSIGNED_AGENT": "Não atribuídas",
+      "NO_MESSAGE_CONTENT": "Sem conteúdo da mensagem",
+      "MESSAGE_CREATED_AT": "Mensagem criada em {time}",
+      "EVENT_OCCURRED_AT": "Evento ocorrido em {time}",
+      "INCOMING_MESSAGE": "Mensagem recebida",
+      "OUTGOING_MESSAGE": "Mensagem enviada"
+    },
     "PAGINATION": {
       "RESULTS": "Exibindo {start} — {end} de {total} resultados",
-      "PER_PAGE_TEMPLATE": "{size} / page"
+      "PER_PAGE_TEMPLATE": "{size} / página"
     },
     "TREND_INFO": "Comparado com {value} no período anterior de mesma duração.",
     "PERCENTILES": {
@@ -151,61 +219,11 @@
       "INBOX": "Caixa de entrada",
       "EMPTY": "Nenhuma conversa etiquetada neste período."
     },
-    "BUSINESS_HOURS_HELP": "Restringe as métricas de tempo ao horário de funcionamento configurado em cada caixa de entrada. Caixa sem horário definido contribui com zero, então as médias podem aparecer como 0 quando nada está configurado.",
-    "METRICS": {
-      "CONVERSATIONS": {
-        "NAME": "Conversas",
-        "DESC": "Abertas no período",
-        "INFO_TEXT": "Número de conversas criadas no período selecionado, contadas pela data de criação."
-      },
-      "INCOMING_MESSAGES": {
-        "NAME": "Mensagens recebidas",
-        "DESC": "Enviadas pelos clientes",
-        "INFO_TEXT": "Total de mensagens recebidas no período. Conta mensagens, não conversas."
-      },
-      "OUTGOING_MESSAGES": {
-        "NAME": "Mensagens enviadas",
-        "DESC": "Enviadas por agentes e bots",
-        "INFO_TEXT": "Total de mensagens enviadas no período, incluindo as respostas do bot. Conta mensagens, não conversas."
-      },
-      "FIRST_RESPONSE_TIME": {
-        "NAME": "Tempo de primeira resposta",
-        "DESC": "Média por conversa",
-        "INFO_TEXT": "Tempo médio entre a abertura da conversa e a primeira resposta de um agente. Considera apenas as conversas que receberam a primeira resposta dentro do período. Com o filtro de horário comercial ligado, conta só o tempo dentro do expediente.",
-        "TOOLTIP_TEXT": "O Tempo de Primeira Resposta é de {metricValue} (com base em {conversationCount} conversas)"
-      },
-      "RESOLUTION_TIME": {
-        "NAME": "Tempo de resolução",
-        "DESC": "Média por resolução",
-        "INFO_TEXT": "Tempo médio entre a abertura da conversa e o seu encerramento. Cada encerramento entra na média: uma conversa reaberta e encerrada de novo conta duas vezes. Com o filtro de horário comercial ligado, conta só o tempo dentro do expediente.",
-        "TOOLTIP_TEXT": "O Tempo de Resolução é de {metricValue} (com base em {conversationCount} conversas)"
-      },
-      "RESOLUTION_COUNT": {
-        "NAME": "Conversas resolvidas",
-        "DESC": "Encerramentos no período",
-        "INFO_TEXT": "Quantas vezes uma conversa foi resolvida no período. Conta encerramentos, não conversas distintas: reabrir e resolver de novo conta duas vezes."
-      },
-      "BOT_RESOLUTION_COUNT": {
-        "NAME": "Resolvidas pelo bot",
-        "DESC": "Encerramentos sem agente",
-        "INFO_TEXT": "Quantas vezes o bot resolveu uma conversa sem repassar para um agente. Conta encerramentos, não conversas distintas."
-      },
-      "BOT_HANDOFF_COUNT": {
-        "NAME": "Repassadas para agentes",
-        "DESC": "Conversas distintas",
-        "INFO_TEXT": "Quantas conversas distintas o bot repassou para um agente humano no período. Diferente dos outros contadores, repasses repetidos na mesma conversa contam uma vez só."
-      },
-      "REPLY_TIME": {
-        "NAME": "Tempo de espera do cliente",
-        "DESC": "Média por resposta",
-        "INFO_TEXT": "Tempo médio que o cliente espera entre a mensagem dele e a próxima resposta do agente, considerando todas as respostas da conversa — não só a primeira. Com o filtro de horário comercial ligado, conta só o tempo dentro do expediente.",
-        "TOOLTIP_TEXT": "O Tempo de Espera é {metricValue} (com base em {conversationCount} respostas)"
-      }
-    }
+    "BUSINESS_HOURS_HELP": "Restringe as métricas de tempo ao horário de funcionamento configurado em cada caixa de entrada. Caixa sem horário definido contribui com zero, então as médias podem aparecer como 0 quando nada está configurado."
   },
   "AGENT_REPORTS": {
     "HEADER": "Visão Geral de Agentes",
-    "DESCRIPTION": "Acompanhe facilmente o desempenho do agente com métricas-chave, como conversas, tempos de resposta, tempos de resolução e casos resolvidos. Clique no nome de um agente para saber mais.",
+    "DESCRIPTION": "Acompanhe facilmente o desempenho dos agentes com métricas-chave, como conversas, tempos de resposta, tempos de resolução e casos resolvidos. Clique no nome de um agente para saber mais.",
     "LOADING_CHART": "Carregando dados do gráfico...",
     "NO_ENOUGH_DATA": "Não existem dados suficientes para gerar o relatório. Tente novamente mais tarde.",
     "DOWNLOAD_AGENT_REPORTS": "Baixar relatórios de agentes",
@@ -356,8 +374,8 @@
     "NO_ENOUGH_DATA": "Não existem dados suficientes para gerar o relatório. Tente novamente mais tarde.",
     "DOWNLOAD_INBOX_REPORTS": "Baixar relatórios de entrada",
     "FILTER_DROPDOWN_LABEL": "Selecionar caixa de entrada",
-    "ALL_INBOXES": "All Inboxes",
-    "SEARCH_INBOX": "Search Inbox",
+    "ALL_INBOXES": "Todas as caixas de entrada",
+    "SEARCH_INBOX": "Pesquisar caixa de entrada",
     "FILTERS": {
       "INPUT_PLACEHOLDER": {
         "INBOXES": "Buscar caixas de entrada"
@@ -426,7 +444,7 @@
   },
   "TEAM_REPORTS": {
     "HEADER": "Resumo do Time",
-    "DESCRIPTION": "Obtenha um instantâneo do desempenho de seu time com métricas essenciais, incluindo conversas, tempos de resposta, tempos de resolução e casos resolvidos. Clique no nome do time para mais detalhes.",
+    "DESCRIPTION": "Tenha uma visão geral do desempenho dos seus times com métricas essenciais, incluindo conversas, tempos de resposta, tempos de resolução e casos resolvidos. Clique no nome do time para ver mais detalhes.",
     "LOADING_CHART": "Carregando dados do gráfico...",
     "NO_ENOUGH_DATA": "Não existem dados suficientes para gerar o relatório. Tente novamente mais tarde.",
     "DOWNLOAD_TEAM_REPORTS": "Baixar relatórios de time",
@@ -502,7 +520,7 @@
   },
   "CSAT_REPORTS": {
     "HEADER": "Relatórios CSAT",
-    "NO_RECORDS": "Não há respostas de pesquisa em CSAT disponíveis.",
+    "NO_RECORDS": "Ainda não há respostas",
     "NO_RECORDS_DESCRIPTION": "As respostas da pesquisa de satisfação aparecem aqui assim que os clientes começarem a responder.",
     "DOWNLOAD": "Baixar relatórios de CSAT",
     "DOWNLOAD_FAILED": "Falha ao baixar Relatórios CSAT",
@@ -532,7 +550,7 @@
     "TABLE": {
       "HEADER": {
         "CONTACT_NAME": "Contato",
-        "AGENT_NAME": "Agente atribuído",
+        "AGENT_NAME": "Agente",
         "RATING": "Classificação",
         "FEEDBACK_TEXT": "Comentário do feedback",
         "CONVERSATION": "Conversa",
@@ -590,7 +608,7 @@
         "TOOLTIP": "Número total de respostas enviadas pelo bot"
       },
       "RESOLUTION_RATE": {
-        "LABEL": "Tempo de resolução",
+        "LABEL": "Taxa de resolução",
         "TOOLTIP": "Número total de conversas resolvidas pelo bot / número total de conversas manipuladas pelo bot * 100"
       },
       "HANDOFF_RATE": {
@@ -618,7 +636,7 @@
       "DOWNLOAD_REPORT": "Baixar relatório"
     },
     "RESOLUTION_HEATMAP": {
-      "HEADER": "Resolutions",
+      "HEADER": "Resoluções",
       "NO_CONVERSATIONS": "Não há conversas",
       "CONVERSATION": "{count} conversa",
       "CONVERSATIONS": "{count} conversas",

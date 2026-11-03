@@ -29,26 +29,43 @@ RSpec.describe Captain::Tools::ResolveConversationTool do
       )
     end
 
-    it 'clears captain_resolve_reason after execution' do
-      tool.perform(tool_context, reason: 'Possible spam')
+    it 'emits a captain resolution event with the tool source' do
+      expect(Captain::ConversationEvents).to receive(:resolved)
+        .with(conversation: conversation, assistant: assistant, source: 'tool', at: kind_of(Time))
 
-      expect(Current.captain_resolve_reason).to be_nil
+      tool.perform(tool_context, reason: 'Possible spam')
+    end
+
+    it 'creates a conversation_resolved reporting event' do
+      create(:captain_inbox, captain_assistant: assistant, inbox: inbox)
+
+      expect do
+        perform_enqueued_jobs do
+          tool.perform(tool_context, reason: 'Possible spam')
+        end
+      end.to change { ReportingEvent.where(conversation_id: conversation.id, name: 'conversation_resolved').count }.by(1)
     end
   end
 
-  describe 'when auto-resolve is disabled for the account' do
-    before { account.update!(captain_disable_auto_resolve: true) }
+  describe 'when auto-resolve is disabled for the assistant' do
+    before { assistant.update!(auto_resolve_mode: 'disabled') }
 
     it 'does not resolve and returns a disabled message' do
       result = tool.perform(tool_context, reason: 'Possible spam')
 
-      expect(result).to eq('Auto-resolve is disabled for this account')
+      expect(result).to eq('Auto-resolve is disabled for this assistant')
       expect(conversation.reload).not_to be_resolved
     end
   end
 
   describe 'resolving an already resolved conversation' do
     let(:conversation) { create(:conversation, account: account, inbox: inbox, status: :resolved) }
+
+    it 'does not emit a captain resolution event' do
+      expect(Captain::ConversationEvents).not_to receive(:resolved)
+
+      tool.perform(tool_context, reason: 'Possible spam')
+    end
 
     it 'does not re-resolve and returns an already resolved message' do
       queue_adapter = ActiveJob::Base.queue_adapter

@@ -85,6 +85,14 @@ const handleClose = () => {
 // O blur basta no computador, mas o Safari do iPhone nao tira o foco ao tocar
 // num elemento que nao recebe foco, e o menu ficaria aberto.
 onClickOutside(menuRef, handleClose);
+const handleFocusOut = event => {
+  // Keep the menu open while focus stays inside it (e.g. the label search
+  // input); close it once focus leaves the menu entirely.
+  if (menuRef.value?.contains(event.relatedTarget)) {
+    return;
+  }
+  handleClose();
+};
 
 onUnmounted(() => {
   isLocked.value = false;
@@ -98,7 +106,7 @@ onUnmounted(() => {
       class="fixed outline-none z-[9999] cursor-pointer"
       :style="position"
       tabindex="0"
-      @blur="handleClose"
+      @focusout="handleFocusOut"
     >
       <slot />
     </div>

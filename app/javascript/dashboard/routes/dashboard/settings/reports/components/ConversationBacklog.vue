@@ -6,11 +6,6 @@ import BarChart from 'shared/components/charts/BarChart.vue';
 import ReportsAPI from 'dashboard/api/reports';
 import { useAlert } from 'dashboard/composables';
 import { useI18n } from 'vue-i18n';
-import {
-  CHART_FONT_FAMILY,
-  DEFAULT_BAR_CHART,
-  DEFAULT_CHART,
-} from '../constants';
 import HelpIcon from './HelpIcon.vue';
 
 const props = defineProps({
@@ -42,34 +37,19 @@ const fetchBacklog = () => {
     });
 };
 
-const collection = computed(() => ({
-  labels: backlog.value.map(point =>
+const chartData = computed(() => ({
+  categories: backlog.value.map(point =>
     format(fromUnixTime(point.timestamp), 'dd-MMM')
   ),
-  datasets: [
+  series: [
     {
-      ...DEFAULT_BAR_CHART,
+      id: 'backlog',
       label: t('REPORT.BACKLOG.HEADER'),
+      color: 'rgb(var(--blue-9))',
       data: backlog.value.map(point => point.value),
     },
   ],
 }));
-
-// Diferente dos cards de metrica, este grafico nao tem um numero acima dele, entao
-// o eixo Y precisa de rotulos de verdade em vez de so o primeiro e o ultimo.
-const chartOptions = {
-  scales: {
-    ...DEFAULT_CHART.scales,
-    y: {
-      ...DEFAULT_CHART.scales.y,
-      ticks: {
-        font: { family: CHART_FONT_FAMILY },
-        beginAtZero: true,
-        maxTicksLimit: 6,
-      },
-    },
-  },
-};
 
 watch(() => props.filters, fetchBacklog, { deep: true });
 
@@ -95,8 +75,9 @@ onMounted(fetchBacklog);
       <div v-else class="flex items-center justify-center h-72">
         <BarChart
           v-if="backlog.length"
-          :collection="collection"
-          :chart-options="chartOptions"
+          :data="chartData"
+          :aria-label="$t('REPORT.BACKLOG.HEADER')"
+          :height="288"
         />
         <span v-else class="text-sm text-n-slate-10">
           {{ $t('REPORT.NO_ENOUGH_DATA') }}

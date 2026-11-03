@@ -1,0 +1,114 @@
+########################################################################
+# Compose unico para as tres stacks do Connect (eletrofast, xpertion, teste).
+#
+# Tudo que difere entre elas vem do .env da propria pasta, entao este arquivo
+# pode ser versionado e um `git pull` propaga melhorias para as tres de uma vez,
+# sem copia manual e sem senha em texto puro.
+#
+# A porta NAO precisa estar no CMD da imagem: config/puma.rb ja faz
+# `port ENV.fetch('PORT', 3000)`. Basta definir APP_PORT no .env.
+#
+# As migrations foram tiradas do boot de proposito. Com 66 pendentes o
+# container ficaria indisponivel durante a migracao, e web e worker subindo
+# juntos tentariam migrar ao mesmo tempo. Rodar como passo explicito:
+#   docker compose run --rm web bundle exec rails db:migrate
+#
+# Os servicos postgres locais das stacks antigas nao estao aqui: desde a
+# consolidacao as tres apontam para pg-central (POSTGRES_HOST=pg-central).
+# Confirmar antes de remover os containers antigos.
+########################################################################
+
+x-app-env: &app-env
+  SECRET_KEY_BASE: ${SECRET_KEY_BASE}
+  CHATWOOT_BASE_URL: ${CHATWOOT_BASE_URL}
+  FRONTEND_URL: ${FRONTEND_URL}
+  RAILS_ENV: production
+  NODE_ENV: production
+  INSTALLATION_ENV: docker
+  CHATWOOT_HUB_URL: ${CHATWOOT_HUB_URL:-https://oriondesign.art.br/setup#}
+  FRONTEND_APP_TITLE: ${BRAND_NAME:-Connect}
+  BRAND_NAME: ${BRAND_NAME:-Connect}
+  INSTALLATION_NAME: ${BRAND_NAME:-Connect}
+  DISPLAY_MANIFEST: ${DISPLAY_MANIFEST:-false}
+  ENABLE_ACCOUNT_SIGNUP: ${ENABLE_ACCOUNT_SIGNUP:-false}
+  DB_POOL: ${DB_POOL:-25}
+  DB_TIMEOUT: ${DB_TIMEOUT:-30000}
+  DB_CONNECT_TIMEOUT: ${DB_CONNECT_TIMEOUT:-30}
+  POSTGRES_HOST: ${POSTGRES_HOST:-pg-central}
+  POSTGRES_PORT: ${POSTGRES_PORT:-5432}
+  POSTGRES_USERNAME: ${POSTGRES_USERNAME}
+  POSTGRES_PASSWORD: ${POSTGRES_APP_PASSWORD}
+  POSTGRES_DATABASE: ${POSTGRES_DATABASE}
+  REDIS_URL: redis://:${REDIS_PASSWORD}@${STACK_PREFIX}-redis:${REDIS_PORT}
+
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: "50m"
+    max-file: "3"
+
+services:
+  redis:
+    image: redis:alpine
+    container_name: ${STACK_PREFIX}-redis
+    restart: always
+    networks: [shared-net]
+    command: >
+      redis-server --requirepass "${REDIS_PASSWORD}"
+      --port ${REDIS_PORT} --appendonly yes
+    volumes:
+      - ./docker_data/redis:/data
+    ports:
+      - '127.0.0.1:${REDIS_PORT}:${REDIS_PORT}'
+    mem_limit: ${REDIS_MEM_LIMIT:-256m}
+    mem_reservation: ${REDIS_MEM_RESERVATION:-128m}
+    memswap_limit: ${REDIS_MEMSWAP_LIMIT:-256m}
+    logging: *logging
+
+  web:
+    image: ${APP_IMAGE}
+    container_name: ${STACK_PREFIX}-rails
+    depends_on: [redis]
+    env_file: .env
+    environment:
+      <<: *app-env
+      PORT: ${APP_PORT}
+      FORCE_SSL: "true"
+      RAILS_FORCE_SSL: "true"
+    entrypoint: docker/entrypoints/rails.sh
+    command: ['bundle', 'exec', 'rails', 's', '-b', '0.0.0.0']
+    ports:
+      # O nginx fala com o container pela shared-net; esta porta e so
+      # conveniencia local. Manter em 127.0.0.1 evita sondagem TLS da
+      # internet batendo direto no Puma, sem passar pelo nginx.
+      - '${APP_BIND:-127.0.0.1}:${APP_PORT}:${APP_PORT}'
+    volumes:
+      - ./docker_data/storage:/app/storage
+    networks: [shared-net]
+    restart: unless-stopped
+    mem_limit: ${WEB_MEM_LIMIT:-1536m}
+    mem_reservation: ${WEB_MEM_RESERVATION:-768m}
+    memswap_limit: ${WEB_MEMSWAP_LIMIT:-2048m}
+    logging: *logging
+
+  worker:
+    image: ${APP_IMAGE}
+    container_name: ${STACK_PREFIX}-sidekiq
+    depends_on: [redis]
+    env_file: .env
+    environment:
+      <<: *app-env
+    working_dir: /app
+    command: ['bundle', 'exec', 'sidekiq', '-C', 'config/sidekiq.yml']
+    volumes:
+      - ./docker_data/storage:/app/storage
+    networks: [shared-net]
+    restart: always
+    mem_limit: ${WORKER_MEM_LIMIT:-1280m}
+    mem_reservation: ${WORKER_MEM_RESERVATION:-640m}
+    memswap_limit: ${WORKER_MEMSWAP_LIMIT:-1792m}
+    logging: *logging
+
+networks:
+  shared-net:
+    external: true

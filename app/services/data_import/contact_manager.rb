@@ -93,7 +93,7 @@ class DataImport::ContactManager
   def update_contact_attributes(params, contact)
     contact.name = params[:name] if placeholder_name?(contact.name) && params[:name].present?
     contact.additional_attributes ||= {}
-    fill_attribute(contact.additional_attributes, 'company_name', params[:company])
+    fill_attribute(contact.additional_attributes, 'company_name', params[:company_name].presence || params[:company].presence)
     fill_attribute(contact.additional_attributes, 'city', params[:city])
     extra = params.except(:identifier, :email, :name, :phone_number)
     contact.assign_attributes(custom_attributes: extra.merge(contact.custom_attributes.compact_blank))
