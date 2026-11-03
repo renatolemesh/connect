@@ -847,7 +847,7 @@ function onKeydown(event) {
   }
   if (props.overrideLineBreaks) {
     insertLineBreakOnEnter(event);
-    return;
+    return false;
   }
   if (isEnterToSendEnabled()) {
     handleLineBreakWhenEnterToSendEnabled(event);

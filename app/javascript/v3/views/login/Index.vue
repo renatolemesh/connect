@@ -67,7 +67,7 @@ function startNeuralCanvas() {
     }
   }
 
-  for (let i = 0; i < particleCount; i++) {
+  for (let i = 0; i < particleCount; i += 1) {
     particles.push(new Particle());
   }
 
@@ -83,7 +83,7 @@ function startNeuralCanvas() {
       ctx.arc(p.x, p.y, 2, 0, Math.PI * 2);
       ctx.fill();
 
-      for (let j = i + 1; j < particles.length; j++) {
+      for (let j = i + 1; j < particles.length; j += 1) {
         const p2 = particles[j];
         const dist = Math.hypot(p.x - p2.x, p.y - p2.y);
 
@@ -414,11 +414,12 @@ export default {
 </script>
 
 <template>
-  <main class="login-root flex flex-col w-full min-h-screen py-20 sm:px-6 lg:px-8">
-    <canvas id="neural-canvas"></canvas>
+  <main
+    class="login-root flex flex-col w-full min-h-screen py-20 sm:px-6 lg:px-8"
+  >
+    <canvas id="neural-canvas" />
 
     <section class="max-w-5xl mx-auto relative z-10">
-
       <img
         :src="globalConfig.logo"
         :alt="globalConfig.installationName"
@@ -512,42 +513,40 @@ export default {
 </template>
 
 <style scoped>
-
-.login-root{
-  background:hsl(222,47%,5%);
-  overflow:hidden;
-  position:relative;
+.login-root {
+  background: hsl(222, 47%, 5%);
+  overflow: hidden;
+  position: relative;
 }
 
-#neural-canvas{
-  position:fixed;
-  inset:0;
-  width:100%;
-  height:100%;
-  z-index:0;
+#neural-canvas {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
 }
 
-.neon-title{
+.neon-title {
   text-shadow:
-    0 0 6px rgba(0,255,255,0.6),
-    0 0 14px rgba(0,255,255,0.4),
-    0 0 30px rgba(0,255,255,0.2);
+    0 0 6px rgba(0, 255, 255, 0.6),
+    0 0 14px rgba(0, 255, 255, 0.4),
+    0 0 30px rgba(0, 255, 255, 0.2);
 }
 
-.login-card{
-  background:rgba(10,15,25,0.85);
-  border-radius:22px;
+.login-card {
+  background: rgba(10, 15, 25, 0.85);
+  border-radius: 22px;
 
-  border:1px solid rgba(255,255,255,0.05);
+  border: 1px solid rgba(255, 255, 255, 0.05);
 
-  backdrop-filter:blur(25px);
+  backdrop-filter: blur(25px);
 
   box-shadow:
-    0 20px 80px rgba(0,0,0,0.9),
-    0 0 30px rgba(0,255,255,0.08);
+    0 20px 80px rgba(0, 0, 0, 0.9),
+    0 0 30px rgba(0, 255, 255, 0.08);
 
-  position:relative;
-  z-index:10;
+  position: relative;
+  z-index: 10;
 }
-
 </style>

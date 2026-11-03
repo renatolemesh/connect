@@ -52,7 +52,7 @@ class ReportsAPI extends ApiClient {
     bucketTimestamp,
     from,
     to,
-    type,
+    type = 'account',
     id,
     groupBy,
     businessHours,

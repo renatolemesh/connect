@@ -114,7 +114,6 @@ const fetchSignaturePositionFromUISettings = uiSettings =>
     ? SIGNATURE_POSITIONS.TOP
     : SIGNATURE_POSITIONS.BOTTOM;
 
-
 /**
  * Checks if a specific editor hotkey is enabled.
  * @param {string} key - The key to check.

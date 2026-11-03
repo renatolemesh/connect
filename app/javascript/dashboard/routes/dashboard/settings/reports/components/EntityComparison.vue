@@ -103,9 +103,7 @@ const chartData = computed(() => {
 });
 
 const formatValue = value =>
-  isTimeMetric.value
-    ? formatTime(value || 0)
-    : Number(value).toLocaleString();
+  isTimeMetric.value ? formatTime(value || 0) : Number(value).toLocaleString();
 
 const hasData = computed(() =>
   selectedIds.value.some(id => (series.value[id] ?? []).length)
