@@ -52,7 +52,11 @@ module Whatsapp::IncomingMessageServiceHelpers
     :file
   end
 
+  # An album arrives as an `unsupported` envelope followed by each photo as its own image message.
+  # The photos carry the content; a placeholder for the envelope only tells agents the media is missing.
   def unprocessable_message_type?(message_type)
+    return true if messages_data.first.dig(:unsupported, :type) == 'album'
+
     %w[reaction ephemeral request_welcome].include?(message_type)
   end
 

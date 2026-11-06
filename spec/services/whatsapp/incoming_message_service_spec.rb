@@ -367,6 +367,22 @@ describe Whatsapp::IncomingMessageService do
         expect(message.content).to eq('This message is unavailable.')
         expect(message.content_attributes['is_unsupported']).to be(true)
       end
+
+      it 'ignores the album envelope because its photos arrive as separate image messages' do
+        params = {
+          'contacts' => [{ 'profile' => { 'name' => 'Sojan Jose' }, 'wa_id' => '2423423243' }],
+          'messages' => [{
+            'errors' => [{ 'code': 131_051, 'title': 'Message type unknown' }],
+            :from => '2423423243', :id => 'wamid.SDFADSf23sfasdafasdfa',
+            :timestamp => '1667047370', :type => 'unsupported',
+            :unsupported => { :type => 'album', :raw_type => 'album' }
+          }]
+        }.with_indifferent_access
+
+        described_class.new(inbox: whatsapp_channel.inbox, params: params).perform
+        expect(whatsapp_channel.inbox.messages.count).to eq(0)
+        expect(whatsapp_channel.inbox.conversations.count).to eq(0)
+      end
     end
 
     context 'when valid status params' do
