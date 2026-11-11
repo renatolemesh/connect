@@ -2,6 +2,7 @@
 import {
   computed,
   onMounted,
+  onBeforeUnmount,
   useTemplateRef,
   ref,
   getCurrentInstance,
@@ -80,6 +81,25 @@ const onLoadedMetadata = () => {
   }
   duration.value = d;
 };
+
+// The message.created broadcast reaches the browser before Active Storage has
+// written the file, so the first request for a just-received audio can 404.
+// The element never retries on its own, leaving a dead player until reload.
+const MAX_LOAD_RETRIES = 4;
+const LOAD_RETRY_DELAY_MS = 1500;
+let loadRetries = 0;
+let loadRetryTimer = null;
+
+const onSourceError = () => {
+  if (loadRetries >= MAX_LOAD_RETRIES) return;
+  loadRetries += 1;
+  loadRetryTimer = setTimeout(
+    () => audioPlayer.value?.load(),
+    LOAD_RETRY_DELAY_MS * loadRetries
+  );
+};
+
+onBeforeUnmount(() => clearTimeout(loadRetryTimer));
 
 const playbackSpeedLabel = computed(() => {
   return `${playbackSpeed.value}x`;
@@ -171,7 +191,7 @@ const downloadAudio = async () => {
     @timeupdate="onTimeUpdate"
     @ended="onEnd"
   >
-    <source :src="timeStampURL" />
+    <source :src="timeStampURL" @error="onSourceError" />
   </audio>
   <div
     v-bind="$attrs"
